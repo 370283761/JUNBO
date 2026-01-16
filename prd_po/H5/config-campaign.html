@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配置广告计划 - 广告批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">批量创编 > 配置</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-text" onclick="saveDraft()">💾 保存草稿</button>
+        <button class="btn btn-default" onclick="goBack()">返回</button>
+      </div>
+    </div>
+
+    <!-- 进度指示器 -->
+    <div class="steps">
+      <div class="step current">
+        <div class="step-icon">1</div>
+        <div class="step-label">广告计划</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">2</div>
+        <div class="step-label">广告组</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">3</div>
+        <div class="step-label">广告创意</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">4</div>
+        <div class="step-label">变量设置</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">5</div>
+        <div class="step-label">预览确认</div>
+      </div>
+    </div>
+
+    <!-- 主要内容区 -->
+    <div class="page-content">
+      <div class="config-container">
+        <!-- 左侧导航 -->
+        <div class="config-sidebar">
+          <h3 style="margin-bottom: 20px; font-size: 16px;">配置导航</h3>
+          <div class="config-nav-item active">
+            <span>📋</span>
+            <span>广告计划</span>
+          </div>
+          <div class="config-nav-item" style="opacity: 0.5; cursor: not-allowed;">
+            <span>🎯</span>
+            <span>广告组</span>
+          </div>
+          <div class="config-nav-item" style="opacity: 0.5; cursor: not-allowed;">
+            <span>🎨</span>
+            <span>广告创意</span>
+          </div>
+          <div class="config-nav-item" style="opacity: 0.5; cursor: not-allowed;">
+            <span>⚙️</span>
+            <span>变量设置</span>
+          </div>
+
+          <div style="margin-top: 32px; padding: 16px; background: var(--gray-1); border-radius: var(--radius-md);">
+            <h4 style="margin-bottom: 8px; font-size: 14px;">预览摘要</h4>
+            <div style="font-size: 12px; color: var(--secondary); line-height: 1.8;">
+              <div>将生成：<strong id="previewCount" style="color: var(--primary-6);">0 条广告</strong></div>
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-3);">
+                <div style="color: var(--warning);">⚠️ 待完成：</div>
+                <ul style="padding-left: 16px; margin-top: 4px;">
+                  <li id="checkCampaign">广告计划</li>
+                  <li>广告组</li>
+                  <li>创意素材</li>
+                  <li>变量设置</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 主配置区 -->
+        <div class="config-main">
+          <div class="config-section">
+            <h2 class="section-title">广告计划配置</h2>
+
+            <form id="campaignForm">
+              <!-- 计划名称规则 -->
+              <div class="form-group">
+                <label class="form-label required">计划名称规则</label>
+                <div style="display: flex; gap: 8px;">
+                  <input
+                    type="text"
+                    id="campaignName"
+                    class="input"
+                    placeholder="例如：{城市}-{产品}推广-{日期}"
+                    value="{城市}-{产品}推广-{日期}"
+                  >
+                  <button type="button" class="btn btn-default" onclick="showVariableSelector()">
+                    插入变量
+                  </button>
+                </div>
+                <div class="form-help">
+                  💡 支持变量：{城市} {产品} {日期} {序号}
+                </div>
+                <div id="namePreview" class="alert alert-info" style="margin-top: 8px; display: none;">
+                  <span>实时预览：</span>
+                  <span id="namePreviewText"></span>
+                </div>
+              </div>
+
+              <!-- 预算设置 -->
+              <div class="form-group">
+                <label class="form-label required">预算设置</label>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                  <label class="radio">
+                    <input type="radio" name="budgetType" value="unlimited">
+                    <span>不限</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="budgetType" value="daily" checked>
+                    <span>日预算</span>
+                  </label>
+                </div>
+                <div id="budgetInput" style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                  <input
+                    type="number"
+                    id="dailyBudget"
+                    class="input"
+                    style="width: 200px;"
+                    placeholder="500"
+                    value="500"
+                    min="100"
+                  >
+                  <span>元/天</span>
+                </div>
+              </div>
+
+              <!-- 投放时段 -->
+              <div class="form-group">
+                <label class="form-label required">投放时段</label>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                  <label class="radio">
+                    <input type="radio" name="schedule" value="allday" checked>
+                    <span>全天</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="schedule" value="custom">
+                    <span>自定义时段</span>
+                  </label>
+                  <button type="button" class="btn btn-text btn-small" onclick="Message.info('自定义时段功能开发中')">
+                    设置
+                  </button>
+                </div>
+              </div>
+
+              <!-- 投放日期 -->
+              <div class="form-group">
+                <label class="form-label required">投放日期</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <input
+                    type="date"
+                    id="startDate"
+                    class="input"
+                    style="width: 200px;"
+                  >
+                  <span>至</span>
+                  <input
+                    type="date"
+                    id="endDate"
+                    class="input"
+                    style="width: 200px;"
+                  >
+                </div>
+              </div>
+
+              <!-- 高级设置 -->
+              <div class="form-group">
+                <div style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleAdvanced()">
+                  <span class="form-label">高级设置</span>
+                  <span id="advancedIcon" style="transition: transform 0.3s;">▼</span>
+                </div>
+                <div id="advancedSettings" style="display: none; margin-top: 16px; padding: 16px; background: var(--gray-1); border-radius: var(--radius-md);">
+                  <div class="form-group mb-4">
+                    <label class="form-label">计划类型</label>
+                    <select class="input" style="width: 100%;">
+                      <option>常规投放</option>
+                      <option>加速投放</option>
+                      <option>均匀投放</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group mb-0">
+                    <label class="checkbox">
+                      <input type="checkbox">
+                      <span>启用自动优化</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- 底部操作按钮 -->
+          <div style="display: flex; justify-content: space-between; padding: 20px 0;">
+            <button class="btn btn-default" onclick="goBack()">
+              ← 上一步
+            </button>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-default" onclick="saveDraft()">
+                保存草稿
+              </button>
+              <button class="btn btn-primary" onclick="nextStep()">
+                下一步 →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 变量选择器弹窗 -->
+  <div id="variableModal" class="modal-mask">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <span>插入变量</span>
+        <button class="modal-close">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 16px; color: var(--secondary);">选择要插入的变量：</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <button class="btn btn-default" onclick="insertVariable('{城市}')" style="justify-content: center;">
+            {城市}
+          </button>
+          <button class="btn btn-default" onclick="insertVariable('{产品}')" style="justify-content: center;">
+            {产品}
+          </button>
+          <button class="btn btn-default" onclick="insertVariable('{日期}')" style="justify-content: center;">
+            {日期}
+          </button>
+          <button class="btn btn-default" onclick="insertVariable('{序号}')" style="justify-content: center;">
+            {序号}
+          </button>
+          <button class="btn btn-default" onclick="insertVariable('{价格}')" style="justify-content: center;">
+            {价格}
+          </button>
+          <button class="btn btn-default" onclick="insertVariable('{折扣}')" style="justify-content: center;">
+            {折扣}
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="hideVariableSelector()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    let variableModal;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      variableModal = new Modal('variableModal');
+
+      // 设置默认日期
+      const today = getCurrentDate();
+      const nextMonth = formatDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      document.getElementById('startDate').value = today;
+      document.getElementById('endDate').value = nextMonth;
+
+      // 加载保存的数据
+      loadDraft();
+
+      // 监听输入变化
+      document.getElementById('campaignName').addEventListener('input', debounce(updatePreview, 300));
+      document.getElementById('dailyBudget').addEventListener('input', debounce(validateBudget, 300));
+
+      // 预算类型切换
+      document.querySelectorAll('input[name="budgetType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          document.getElementById('budgetInput').style.display =
+            this.value === 'daily' ? 'flex' : 'none';
+        });
+      });
+
+      // 初始预览
+      updatePreview();
+    });
+
+    // 更新预览
+    function updatePreview() {
+      const nameTemplate = document.getElementById('campaignName').value;
+      if (nameTemplate.includes('{')) {
+        const preview = replaceVariables(nameTemplate, {
+          '城市': '北京',
+          '产品': '手机',
+          '日期': getCurrentDate(),
+          '序号': '001'
+        });
+        document.getElementById('namePreview').style.display = 'flex';
+        document.getElementById('namePreviewText').textContent = preview;
+      } else {
+        document.getElementById('namePreview').style.display = 'none';
+      }
+    }
+
+    // 验证预算
+    function validateBudget() {
+      const budget = document.getElementById('dailyBudget').value;
+      const budgetInput = document.getElementById('dailyBudget');
+
+      if (budget && parseFloat(budget) < 100) {
+        budgetInput.classList.add('error');
+        Message.warning('日预算不能低于100元');
+      } else {
+        budgetInput.classList.remove('error');
+      }
+    }
+
+    // 显示变量选择器
+    function showVariableSelector() {
+      if (variableModal) {
+        variableModal.show();
+      }
+    }
+
+    // 隐藏变量选择器
+    function hideVariableSelector() {
+      if (variableModal) {
+        variableModal.hide();
+      }
+    }
+
+    // 插入变量
+    function insertVariable(variable) {
+      const input = document.getElementById('campaignName');
+      const cursorPos = input.selectionStart;
+      const textBefore = input.value.substring(0, cursorPos);
+      const textAfter = input.value.substring(cursorPos);
+      input.value = textBefore + variable + textAfter;
+      input.focus();
+      input.selectionStart = input.selectionEnd = cursorPos + variable.length;
+      updatePreview();
+      hideVariableSelector();
+    }
+
+    // 切换高级设置
+    function toggleAdvanced() {
+      const settings = document.getElementById('advancedSettings');
+      const icon = document.getElementById('advancedIcon');
+      if (settings.style.display === 'none') {
+        settings.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        settings.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // 保存草稿
+    function saveDraft() {
+      const data = {
+        campaignName: document.getElementById('campaignName').value,
+        budgetType: document.querySelector('input[name="budgetType"]:checked').value,
+        dailyBudget: document.getElementById('dailyBudget').value,
+        schedule: document.querySelector('input[name="schedule"]:checked').value,
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value
+      };
+
+      DataStore.save('campaignConfig', data);
+      Message.success('草稿已保存');
+    }
+
+    // 加载草稿
+    function loadDraft() {
+      const data = DataStore.load('campaignConfig');
+      if (data) {
+        document.getElementById('campaignName').value = data.campaignName || '{城市}-{产品}推广-{日期}';
+        if (data.budgetType) {
+          document.querySelector(`input[name="budgetType"][value="${data.budgetType}"]`).checked = true;
+        }
+        if (data.dailyBudget) {
+          document.getElementById('dailyBudget').value = data.dailyBudget;
+        }
+        if (data.schedule) {
+          document.querySelector(`input[name="schedule"][value="${data.schedule}"]`).checked = true;
+        }
+        if (data.startDate) {
+          document.getElementById('startDate').value = data.startDate;
+        }
+        if (data.endDate) {
+          document.getElementById('endDate').value = data.endDate;
+        }
+        updatePreview();
+      }
+    }
+
+    // 下一步
+    function nextStep() {
+      // 验证表单
+      const campaignName = document.getElementById('campaignName').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const budgetType = document.querySelector('input[name="budgetType"]:checked').value;
+      const dailyBudget = document.getElementById('dailyBudget').value;
+
+      if (!campaignName.trim()) {
+        Message.error('请输入计划名称规则');
+        return;
+      }
+
+      if (!startDate || !endDate) {
+        Message.error('请选择投放日期');
+        return;
+      }
+
+      if (budgetType === 'daily' && (!dailyBudget || parseFloat(dailyBudget) < 100)) {
+        Message.error('日预算不能低于100元');
+        return;
+      }
+
+      // 保存并跳转
+      saveDraft();
+      Message.success('广告计划配置完成');
+      setTimeout(() => {
+        window.location.href = 'config-adgroup.html';
+      }, 500);
+    }
+
+    // 返回上一步
+    function goBack() {
+      if (confirm('返回上一步将不保存当前配置，是否继续？')) {
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>

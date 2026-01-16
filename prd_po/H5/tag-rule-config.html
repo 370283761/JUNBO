@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 3: 配置生成规则 - 智能批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .config-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 800px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    .config-main {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    .template-section {
+      margin-bottom: var(--space-6);
+    }
+
+    .template-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .template-grid {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .template-card {
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+
+    .template-card:hover {
+      border-color: var(--primary-5);
+      box-shadow: var(--shadow-md);
+    }
+
+    .template-card.selected {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .template-card-badge {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      padding: 4px 12px;
+      background: var(--warning-1);
+      color: var(--warning-7);
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .template-card.selected .template-card-badge {
+      background: var(--primary-6);
+      color: var(--white);
+    }
+
+    .template-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .template-card-icon {
+      font-size: 32px;
+    }
+
+    .template-card-content {
+      flex: 1;
+    }
+
+    .template-card-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-2);
+    }
+
+    .template-card-desc {
+      font-size: 13px;
+      color: var(--secondary);
+      margin-bottom: var(--space-3);
+      line-height: 1.6;
+    }
+
+    .template-card-formula {
+      padding: var(--space-3);
+      background: var(--gray-1);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+    }
+
+    .template-card.selected .template-card-formula {
+      background: var(--white);
+    }
+
+    .formula-text {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: var(--space-2);
+    }
+
+    .formula-calc {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-6);
+    }
+
+    .template-card-result {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--success-6);
+      text-align: center;
+      padding: var(--space-2);
+      background: var(--success-1);
+      border-radius: var(--radius-md);
+    }
+
+    .custom-config {
+      background: var(--gray-1);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-top: var(--space-4);
+      display: none;
+    }
+
+    .custom-config.active {
+      display: block;
+    }
+
+    .config-row {
+      margin-bottom: var(--space-4);
+    }
+
+    .config-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .config-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .config-input-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .config-input {
+      width: 100px;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+    }
+
+    .config-input:focus {
+      border-color: var(--primary-6);
+      outline: none;
+    }
+
+    .config-sub {
+      margin-left: var(--space-5);
+      margin-top: var(--space-2);
+      padding-left: var(--space-3);
+      border-left: 2px solid var(--gray-3);
+    }
+
+    .preview-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      position: sticky;
+      top: var(--space-6);
+    }
+
+    .preview-section {
+      margin-bottom: var(--space-5);
+    }
+
+    .preview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .preview-item {
+      padding: var(--space-2) 0;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed var(--gray-3);
+      font-size: 13px;
+    }
+
+    .preview-item:last-child {
+      border-bottom: none;
+    }
+
+    .preview-label {
+      color: var(--secondary);
+    }
+
+    .preview-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .estimate-box {
+      background: linear-gradient(135deg, var(--success-1) 0%, var(--success-2) 100%);
+      border: 1px solid var(--success-3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      text-align: center;
+    }
+
+    .estimate-label {
+      font-size: 13px;
+      color: var(--secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .estimate-value {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--success-6);
+      line-height: 1;
+      margin-bottom: var(--space-1);
+    }
+
+    .estimate-unit {
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .estimate-breakdown {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--success-3);
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-6);
+      padding: var(--space-4) var(--space-6);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      position: sticky;
+      bottom: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .steps-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+      padding: var(--space-4);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+    }
+
+    .step-item {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      right: -50%;
+      width: 100%;
+      height: 2px;
+      background: var(--gray-3);
+      z-index: -1;
+    }
+
+    .step-item.active .step-number {
+      background: var(--primary-6);
+      color: var(--white);
+    }
+
+    .step-item.completed .step-number {
+      background: var(--success-6);
+      color: var(--white);
+    }
+
+    .step-item.completed:not(:last-child)::after {
+      background: var(--success-3);
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-3);
+      color: var(--gray-6);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .step-label {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .step-item.active .step-label {
+      color: var(--primary-6);
+      font-weight: 600;
+    }
+
+    .step-item.completed .step-label {
+      color: var(--success-6);
+    }
+
+    .toggle-btn {
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      transition: all var(--transition-base);
+    }
+
+    .toggle-btn:hover {
+      border-color: var(--primary-6);
+      color: var(--primary-6);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">智能批量创编 - 配置规则</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回上一步</button>
+        <button class="btn btn-default" onclick="saveAsDraft()">💾 保存草稿</button>
+      </div>
+    </div>
+
+    <!-- 步骤指示器 -->
+    <div class="page-content">
+      <div class="steps-indicator fade-in">
+        <div class="step-item completed">
+          <div class="step-number">✓</div>
+          <div class="step-label">选择标签</div>
+        </div>
+        <div class="step-item completed">
+          <div class="step-number">✓</div>
+          <div class="step-label">素材&小说</div>
+        </div>
+        <div class="step-item active">
+          <div class="step-number">3</div>
+          <div class="step-label">配置规则</div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-label">预览&提交</div>
+        </div>
+      </div>
+
+      <div class="config-container">
+        <!-- 左侧：规则配置 -->
+        <div class="config-main">
+          <div class="template-section">
+            <div class="template-title">
+              <span>📋</span>
+              <span>选择规则模板（推荐）</span>
+            </div>
+
+            <div class="template-grid">
+              <!-- 模板1：全量组合 -->
+              <div class="template-card" data-template="template1" onclick="selectTemplate('template1')">
+                <div class="template-card-badge">简单高效</div>
+                <div class="template-card-header">
+                  <div class="template-card-icon">⚡</div>
+                  <div class="template-card-content">
+                    <div class="template-card-name">规则模板1：全量组合</div>
+                    <div class="template-card-desc">
+                      主体 × 项目 × 小说 × 素材 = 全量组合生成<br>
+                      适合：快速起量、全面覆盖
+                    </div>
+                  </div>
+                </div>
+
+                <div class="template-card-formula">
+                  <div class="formula-text">根据您选择的标签：</div>
+                  <div class="formula-calc">
+                    25 主体 × 481 项目 × 234 小说 ÷ 10000<br>
+                    × 3 素材/广告 = <strong id="template1Count">843</strong> 条
+                  </div>
+                </div>
+
+                <div class="template-card-result">
+                  预计生成：<span id="template1Result">843</span> 条广告计划
+                </div>
+              </div>
+
+              <!-- 模板2：按账户生成 -->
+              <div class="template-card selected" data-template="template2" onclick="selectTemplate('template2')">
+                <div class="template-card-badge">推荐使用</div>
+                <div class="template-card-header">
+                  <div class="template-card-icon">🎯</div>
+                  <div class="template-card-content">
+                    <div class="template-card-name">规则模板2：按账户生成</div>
+                    <div class="template-card-desc">
+                      每个账户生成 N 个广告，自动分配素材<br>
+                      适合：精细化投放、效果优化
+                    </div>
+                  </div>
+                </div>
+
+                <div class="template-card-formula">
+                  <div class="formula-text">根据您选择的标签：</div>
+                  <div class="formula-calc">
+                    筛选符合条件的账户：约 125 个<br>
+                    每账户生成 6 个广告（3解压 + 3滚屏）<br>
+                    = <strong id="template2Count">750</strong> 条
+                  </div>
+                </div>
+
+                <div class="template-card-result">
+                  预计生成：<span id="template2Result">750</span> 条广告计划
+                </div>
+              </div>
+
+              <!-- 模板3：自定义 -->
+              <div class="template-card" data-template="custom" onclick="selectTemplate('custom')">
+                <div class="template-card-badge">灵活配置</div>
+                <div class="template-card-header">
+                  <div class="template-card-icon">🔧</div>
+                  <div class="template-card-content">
+                    <div class="template-card-name">自定义规则</div>
+                    <div class="template-card-desc">
+                      完全自定义生成规则和参数<br>
+                      适合：特殊需求、高级用户
+                    </div>
+                  </div>
+                </div>
+
+                <div class="template-card-result">
+                  点击展开配置选项
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 自定义配置区 -->
+          <div class="custom-config" id="customConfig">
+            <div class="config-row">
+              <div class="config-label">
+                <span>生成范围</span>
+              </div>
+              <div class="config-input-group">
+                <label>
+                  <input type="radio" name="scope" value="account" checked>
+                  按账户生成
+                </label>
+                <label>
+                  <input type="radio" name="scope" value="subject">
+                  按主体生成
+                </label>
+                <label>
+                  <input type="radio" name="scope" value="project">
+                  按项目生成
+                </label>
+              </div>
+            </div>
+
+            <div class="config-row">
+              <div class="config-label">
+                <span>广告数量配置</span>
+              </div>
+              <div class="config-input-group">
+                <span>每个账户生成</span>
+                <input type="number" class="config-input" id="customAdCount" value="6" min="1" max="20" onchange="updateCustomEstimate()">
+                <span>个广告</span>
+              </div>
+
+              <div class="config-sub">
+                <div class="config-input-group" style="margin-bottom: var(--space-2);">
+                  <span>解压素材：</span>
+                  <input type="number" class="config-input" id="customDecompress" value="3" min="0" max="10" onchange="updateCustomBreakdown()">
+                  <span>个</span>
+                </div>
+                <div class="config-input-group">
+                  <span>滚屏素材：</span>
+                  <input type="number" class="config-input" id="customScroll" value="3" min="0" max="10" onchange="updateCustomBreakdown()">
+                  <span>个</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="config-row">
+              <div class="config-label">
+                <span>素材分配策略</span>
+              </div>
+
+              <div style="margin-bottom: var(--space-2);">
+                <div style="font-weight: 600; font-size: 13px; margin-bottom: var(--space-2);">解压素材：</div>
+                <label style="display: block; margin-bottom: var(--space-1);">
+                  <input type="checkbox" id="strategyDecompressExposure">
+                  按曝光降序选择素材
+                </label>
+                <label style="display: block;">
+                  <input type="checkbox" id="strategyDecompressRandom" checked>
+                  随机选择素材
+                </label>
+              </div>
+
+              <div>
+                <div style="font-weight: 600; font-size: 13px; margin-bottom: var(--space-2);">滚屏素材：</div>
+                <label style="display: block; margin-bottom: var(--space-1);">
+                  <input type="checkbox" id="strategyScrollClicks" checked>
+                  按点击降序选择素材
+                </label>
+                <label style="display: block;">
+                  <input type="checkbox" id="strategyScrollRandom">
+                  随机选择素材
+                </label>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-4); padding: var(--space-3); background: var(--blue-1); border-radius: var(--radius-md); font-size: 13px;">
+              💡 <strong>预计生成：</strong><span id="customEstimate" style="color: var(--primary-6); font-weight: 700; font-size: 16px;">750</span> 条广告计划
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：预览面板 -->
+        <div class="preview-panel">
+          <div class="preview-section">
+            <div class="preview-title">
+              <span>📊</span>
+              <span>标签数据汇总</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-label">主体标签</span>
+              <span class="preview-value" id="summarySubjects">0 个</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">项目标签</span>
+              <span class="preview-value" id="summaryProjects">0 个</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">素材标签</span>
+              <span class="preview-value" id="summaryMaterials">0 个</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">小说标签</span>
+              <span class="preview-value" id="summaryBooks">0 个</span>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <div class="preview-title">
+              <span>🎯</span>
+              <span>匹配数据统计</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-label">主体</span>
+              <span class="preview-value" id="matchSubjects">25 个</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">项目</span>
+              <span class="preview-value" id="matchProjects">481 个</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">素材</span>
+              <span class="preview-value" id="matchMaterials">15,801 个</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">小说</span>
+              <span class="preview-value" id="matchBooks">234 本</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">符合条件账户</span>
+              <span class="preview-value" id="matchAccounts">125 个</span>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <div class="preview-title">
+              <span>✅</span>
+              <span>最终生成预估</span>
+            </div>
+
+            <div class="estimate-box">
+              <div class="estimate-label">基于选择的标签和规则</div>
+              <div class="estimate-value" id="finalEstimate">750</div>
+              <div class="estimate-unit">条广告计划</div>
+
+              <div class="estimate-breakdown">
+                使用规则模板：<span id="finalTemplate">模板2（按账户生成）</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作栏 -->
+      <div class="action-bar">
+        <button class="btn btn-default" onclick="goBack()">← 返回上一步</button>
+        <button class="btn btn-primary" onclick="nextStep()">
+          下一步：预览生成结果 →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    let selectedTemplate = 'template2';
+    let allTags = {};
+
+    // 选择模板
+    function selectTemplate(templateId) {
+      selectedTemplate = templateId;
+
+      // 更新UI
+      document.querySelectorAll('.template-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+
+      document.querySelector(`[data-template="${templateId}"]`).classList.add('selected');
+
+      // 显示/隐藏自定义配置
+      if (templateId === 'custom') {
+        document.getElementById('customConfig').classList.add('active');
+      } else {
+        document.getElementById('customConfig').classList.remove('active');
+      }
+
+      updateFinalEstimate();
+    }
+
+    // 更新自定义分解
+    function updateCustomBreakdown() {
+      const decompress = parseInt(document.getElementById('customDecompress').value) || 0;
+      const scroll = parseInt(document.getElementById('customScroll').value) || 0;
+      const total = decompress + scroll;
+
+      document.getElementById('customAdCount').value = total;
+      updateCustomEstimate();
+    }
+
+    // 更新自定义预估
+    function updateCustomEstimate() {
+      const adCount = parseInt(document.getElementById('customAdCount').value) || 6;
+      const accountCount = 125; // 简化计算
+
+      const estimate = accountCount * adCount;
+      document.getElementById('customEstimate').textContent = estimate;
+
+      updateFinalEstimate();
+    }
+
+    // 更新最终预估
+    function updateFinalEstimate() {
+      let estimate = 750;
+      let templateName = '模板2（按账户生成）';
+
+      if (selectedTemplate === 'template1') {
+        estimate = 843;
+        templateName = '模板1（全量组合）';
+      } else if (selectedTemplate === 'template2') {
+        estimate = 750;
+        templateName = '模板2（按账户生成）';
+      } else if (selectedTemplate === 'custom') {
+        estimate = parseInt(document.getElementById('customEstimate').textContent) || 750;
+        templateName = '自定义规则';
+      }
+
+      document.getElementById('finalEstimate').textContent = estimate;
+      document.getElementById('finalTemplate').textContent = templateName;
+    }
+
+    // 返回
+    function goBack() {
+      window.location.href = 'tag-selection-step2.html';
+    }
+
+    // 保存草稿
+    function saveAsDraft() {
+      const ruleConfig = {
+        template: selectedTemplate,
+        customConfig: {
+          adCount: document.getElementById('customAdCount').value,
+          decompress: document.getElementById('customDecompress').value,
+          scroll: document.getElementById('customScroll').value
+        }
+      };
+
+      DataStore.save('ruleConfig', ruleConfig);
+      Message.success('草稿已保存');
+    }
+
+    // 下一步
+    function nextStep() {
+      const ruleConfig = {
+        template: selectedTemplate,
+        estimate: parseInt(document.getElementById('finalEstimate').textContent)
+      };
+
+      if (selectedTemplate === 'custom') {
+        ruleConfig.customConfig = {
+          adCount: parseInt(document.getElementById('customAdCount').value),
+          decompress: parseInt(document.getElementById('customDecompress').value),
+          scroll: parseInt(document.getElementById('customScroll').value)
+        };
+      }
+
+      DataStore.save('ruleConfig', ruleConfig);
+      DataStore.save('selectedTags_all', allTags);
+
+      Message.success('规则配置完成，生成预览中...');
+
+      setTimeout(() => {
+        window.location.href = 'tag-preview-result.html';
+      }, 500);
+    }
+
+    // 页面加载
+    window.addEventListener('DOMContentLoaded', () => {
+      // 加载标签数据
+      allTags = DataStore.load('selectedTags_all') || {};
+
+      // 更新摘要
+      const step1 = DataStore.load('selectedTags_step1') || {};
+      const step2 = DataStore.load('selectedTags_step2') || {};
+
+      document.getElementById('summarySubjects').textContent = (step1.subject || []).length + ' 个';
+      document.getElementById('summaryProjects').textContent = (step1.project || []).length + ' 个';
+      document.getElementById('summaryMaterials').textContent = (step2.material || []).length + ' 个';
+      document.getElementById('summaryBooks').textContent = (step2.book || []).length + ' 个';
+
+      // 加载草稿
+      const savedConfig = DataStore.load('ruleConfig');
+      if (savedConfig && savedConfig.template) {
+        selectTemplate(savedConfig.template);
+
+        if (savedConfig.customConfig) {
+          document.getElementById('customAdCount').value = savedConfig.customConfig.adCount || 6;
+          document.getElementById('customDecompress').value = savedConfig.customConfig.decompress || 3;
+          document.getElementById('customScroll').value = savedConfig.customConfig.scroll || 3;
+        }
+      }
+
+      updateFinalEstimate();
+    });
+  </script>
+</body>
+</html>

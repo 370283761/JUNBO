@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 2: 选择素材和小说标签 - 智能批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .tag-selection-container {
+      display: flex;
+      gap: var(--space-6);
+      min-height: calc(100vh - 64px - 100px);
+    }
+
+    .tag-left {
+      flex: 1;
+      max-width: 800px;
+    }
+
+    .tag-right {
+      width: 320px;
+      position: sticky;
+      top: var(--space-6);
+      height: fit-content;
+    }
+
+    .tag-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+
+    .tag-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-5);
+    }
+
+    .tag-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .tag-section-badge {
+      font-size: 14px;
+      color: var(--primary-6);
+      font-weight: 500;
+    }
+
+    .tag-category-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .tag-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .tag-button {
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-3);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      background: var(--white);
+    }
+
+    .tag-button:hover {
+      border-color: var(--primary-5);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tag-button.selected {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .tag-button-icon {
+      font-size: 24px;
+      margin-bottom: var(--space-2);
+    }
+
+    .tag-button-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-1);
+    }
+
+    .tag-button-count {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .tag-button.selected .tag-button-count {
+      color: var(--primary-6);
+      font-weight: 600;
+    }
+
+    .tag-card {
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .tag-card:hover {
+      border-color: var(--primary-5);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tag-card.selected {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .tag-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .tag-card-checkbox {
+      margin-top: 2px;
+      cursor: pointer;
+    }
+
+    .tag-card-content {
+      flex: 1;
+    }
+
+    .tag-card-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-2);
+    }
+
+    .tag-card-count {
+      font-size: 14px;
+      color: var(--primary-6);
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .tag-card-desc {
+      font-size: 13px;
+      color: var(--secondary);
+      line-height: 1.6;
+    }
+
+    .tag-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+      margin-top: var(--space-2);
+    }
+
+    .mini-tag {
+      padding: 2px 8px;
+      background: var(--gray-2);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .recommend-box {
+      background: linear-gradient(135deg, var(--blue-1) 0%, var(--purple-1) 100%);
+      border: 1px solid var(--blue-3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .recommend-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .recommend-item {
+      padding: var(--space-2) var(--space-3);
+      background: var(--white);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .recommend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .recommend-text {
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .preview-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    .preview-section {
+      margin-bottom: var(--space-5);
+    }
+
+    .preview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .preview-tag-list {
+      margin-bottom: var(--space-3);
+    }
+
+    .preview-tag-item {
+      padding: var(--space-2) 0;
+      border-bottom: 1px dashed var(--gray-3);
+    }
+
+    .preview-tag-item:last-child {
+      border-bottom: none;
+    }
+
+    .preview-tag-name {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .preview-tag-count {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .preview-total {
+      padding: var(--space-3);
+      background: var(--gray-1);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .preview-total-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .preview-total-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-6);
+    }
+
+    .preview-total-unit {
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .estimate-box {
+      background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+      border: 1px solid var(--primary-3);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-align: center;
+    }
+
+    .estimate-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .estimate-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-6);
+      line-height: 1;
+    }
+
+    .estimate-unit {
+      font-size: 14px;
+      color: var(--secondary);
+      margin-top: var(--space-1);
+    }
+
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-6);
+      padding: var(--space-4) var(--space-6);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      position: sticky;
+      bottom: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .info-tip {
+      padding: var(--space-3);
+      background: var(--blue-1);
+      border-left: 3px solid var(--blue-6);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text);
+      margin-top: var(--space-3);
+    }
+
+    .steps-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+      padding: var(--space-4);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+    }
+
+    .step-item {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      right: -50%;
+      width: 100%;
+      height: 2px;
+      background: var(--gray-3);
+      z-index: -1;
+    }
+
+    .step-item.active .step-number {
+      background: var(--primary-6);
+      color: var(--white);
+    }
+
+    .step-item.completed .step-number {
+      background: var(--success-6);
+      color: var(--white);
+    }
+
+    .step-item.completed:not(:last-child)::after {
+      background: var(--success-3);
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-3);
+      color: var(--gray-6);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .step-label {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .step-item.active .step-label {
+      color: var(--primary-6);
+      font-weight: 600;
+    }
+
+    .step-item.completed .step-label {
+      color: var(--success-6);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">智能批量创编 - 选择标签</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回上一步</button>
+        <button class="btn btn-default" onclick="saveAsDraft()">💾 保存草稿</button>
+      </div>
+    </div>
+
+    <!-- 步骤指示器 -->
+    <div class="page-content">
+      <div class="steps-indicator fade-in">
+        <div class="step-item completed">
+          <div class="step-number">✓</div>
+          <div class="step-label">选择标签</div>
+        </div>
+        <div class="step-item active">
+          <div class="step-number">2</div>
+          <div class="step-label">素材&小说</div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-label">配置规则</div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-label">预览&提交</div>
+        </div>
+      </div>
+
+      <div class="tag-selection-container">
+        <!-- 左侧：标签选择区 -->
+        <div class="tag-left">
+          <!-- 3️⃣ 选择素材标签 -->
+          <div class="tag-section slide-up">
+            <div class="tag-section-header">
+              <div class="tag-section-title">
+                <span>3️⃣</span>
+                <span>选择素材标签</span>
+                <span style="color: var(--error); font-size: 14px;">*</span>
+              </div>
+              <div class="tag-section-badge" id="materialBadge">已选 0 个标签</div>
+            </div>
+
+            <div class="tag-category-title">🏷️ 按素材类型</div>
+
+            <div class="tag-grid">
+              <div class="tag-button" data-tag-id="material_decompress" onclick="toggleButtonTag(this, 'material')">
+                <div class="tag-button-icon">📹</div>
+                <div class="tag-button-name">解压素材</div>
+                <div class="tag-button-count">12,345个</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="material_scroll" onclick="toggleButtonTag(this, 'material')">
+                <div class="tag-button-icon">📱</div>
+                <div class="tag-button-name">滚屏素材</div>
+                <div class="tag-button-count">8,967个</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="material_adx" onclick="toggleButtonTag(this, 'material')">
+                <div class="tag-button-icon">🎬</div>
+                <div class="tag-button-name">ADX素材</div>
+                <div class="tag-button-count">5,432个</div>
+              </div>
+            </div>
+
+            <div class="tag-category-title" style="margin-top: var(--space-4);">🏷️ 按效果筛选</div>
+
+            <div class="tag-card" data-tag-id="material_high_exposure" onclick="toggleTag(this, 'material')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">高曝光素材</div>
+                  <div class="tag-card-count">📊 包含 3,456 个素材</div>
+                  <div class="tag-card-desc">近7天曝光量 > 10万，适合快速起量</div>
+                  <div class="tag-card-tags">
+                    <span class="mini-tag">解压</span>
+                    <span class="mini-tag">滚屏</span>
+                    <span class="mini-tag">ADX</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tag-card" data-tag-id="material_high_click" onclick="toggleTag(this, 'material')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">高点击素材</div>
+                  <div class="tag-card-count">📊 包含 2,341 个素材</div>
+                  <div class="tag-card-desc">点击率 > 5%，用户互动性强</div>
+                  <div class="tag-card-tags">
+                    <span class="mini-tag">解压</span>
+                    <span class="mini-tag">滚屏</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tag-card" data-tag-id="material_new" onclick="toggleTag(this, 'material')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">新素材</div>
+                  <div class="tag-card-count">📊 包含 1,234 个素材</div>
+                  <div class="tag-card-desc">上传 < 3天，测试新创意</div>
+                  <div class="tag-card-tags">
+                    <span class="mini-tag">解压</span>
+                    <span class="mini-tag">滚屏</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-tip">
+              💡 <strong>素材分配策略：</strong>系统将根据以下优先级自动分配素材：<br>
+              1️⃣ 按选择的标签筛选素材<br>
+              2️⃣ 优先使用近期效果好的素材<br>
+              3️⃣ 自动去重，避免重复使用
+            </div>
+          </div>
+
+          <!-- 4️⃣ 选择小说标签 -->
+          <div class="tag-section slide-up" style="animation-delay: 0.1s;">
+            <div class="tag-section-header">
+              <div class="tag-section-title">
+                <span>4️⃣</span>
+                <span>选择小说标签</span>
+                <span style="color: var(--error); font-size: 14px;">*</span>
+              </div>
+              <div class="tag-section-badge" id="bookBadge">已选 0 个标签</div>
+            </div>
+
+            <!-- 智能推荐 -->
+            <div class="recommend-box">
+              <div class="recommend-title">
+                <span>💡</span>
+                <span>智能推荐</span>
+              </div>
+              <div style="font-size: 13px; color: var(--secondary); margin-bottom: var(--space-3);">
+                根据您选择的项目标签，系统推荐以下小说标签：
+              </div>
+              <div class="recommend-item">
+                <div class="recommend-text">⭐ 霸道总裁爆款小说 (89本)</div>
+                <button class="btn btn-primary btn-small" onclick="quickSelect('book_badao_hot')">快速选择</button>
+              </div>
+              <div class="recommend-item">
+                <div class="recommend-text">⭐ 玄幻修仙热门小说 (67本)</div>
+                <button class="btn btn-primary btn-small" onclick="quickSelect('book_xuanhuan_hot')">快速选择</button>
+              </div>
+            </div>
+
+            <div class="tag-category-title">🏷️ 按效果分类</div>
+
+            <div class="tag-card" data-tag-id="book_hot" onclick="toggleTag(this, 'book')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">爆款小说</div>
+                  <div class="tag-card-count">📊 包含 234 本小说</div>
+                  <div class="tag-card-desc">
+                    近30天：曝光 > 100万 · 点击率 > 3%<br>
+                    包含题材：霸道总裁、穿越重生、都市言情
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tag-card" data-tag-id="book_high_conversion" onclick="toggleTag(this, 'book')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">高转化小说</div>
+                  <div class="tag-card-count">📊 包含 156 本小说</div>
+                  <div class="tag-card-desc">
+                    近30天：转化率 > 5% · ROI > 1.5<br>
+                    包含题材：都市言情、霸道总裁
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tag-card" data-tag-id="book_new" onclick="toggleTag(this, 'book')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">新上架小说</div>
+                  <div class="tag-card-count">📊 包含 189 本小说</div>
+                  <div class="tag-card-desc">上架 < 7天，测试新内容潜力</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tag-category-title" style="margin-top: var(--space-4);">🏷️ 按作者分类</div>
+
+            <div class="tag-grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="tag-button" data-tag-id="book_top_author" onclick="toggleButtonTag(this, 'book')">
+                <div class="tag-button-icon">⭐</div>
+                <div class="tag-button-name">头部作者作品</div>
+                <div class="tag-button-count">123本</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="book_new_author" onclick="toggleButtonTag(this, 'book')">
+                <div class="tag-button-icon">🆕</div>
+                <div class="tag-button-name">新人作者作品</div>
+                <div class="tag-button-count">234本</div>
+              </div>
+            </div>
+
+            <div class="info-tip">
+              💡 <strong>提示：</strong>已选择 <span id="bookCount">0</span> 个小说标签，匹配 <span id="bookMatchCount">0</span> 本小说。
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：实时预览 -->
+        <div class="tag-right">
+          <div class="preview-panel">
+            <div class="preview-section">
+              <div class="preview-title">
+                <span>📊</span>
+                <span>标签匹配汇总</span>
+              </div>
+
+              <!-- 素材标签 -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: var(--space-2);">
+                  素材标签: <span id="previewMaterialTagCount">0</span> 个
+                </div>
+                <div class="preview-tag-list" id="previewMaterialTags">
+                  <div style="font-size: 13px; color: var(--secondary);">暂无选择</div>
+                </div>
+                <div class="preview-total">
+                  <div class="preview-total-label">匹配素材</div>
+                  <div class="preview-total-value" id="previewMaterialTotal">0</div>
+                  <div class="preview-total-unit">个</div>
+                </div>
+              </div>
+
+              <!-- 小说标签 -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: var(--space-2);">
+                  小说标签: <span id="previewBookTagCount">0</span> 个
+                </div>
+                <div class="preview-tag-list" id="previewBookTags">
+                  <div style="font-size: 13px; color: var(--secondary);">暂无选择</div>
+                </div>
+                <div class="preview-total">
+                  <div class="preview-total-label">匹配小说</div>
+                  <div class="preview-total-value" id="previewBookTotal">0</div>
+                  <div class="preview-total-unit">本</div>
+                </div>
+              </div>
+
+              <!-- 上一步数据摘要 -->
+              <div style="padding: var(--space-3); background: var(--gray-1); border-radius: var(--radius-md); font-size: 12px; color: var(--secondary);">
+                <div>主体: <span id="prevSubjectCount">0</span> 个</div>
+                <div>项目: <span id="prevProjectCount">0</span> 个</div>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-title">
+                <span>💡</span>
+                <span>生成预估</span>
+              </div>
+
+              <div class="estimate-box">
+                <div class="estimate-label">根据所有标签</div>
+                <div class="estimate-value" id="estimatedCount">0</div>
+                <div class="estimate-unit">条广告计划</div>
+              </div>
+
+              <div style="margin-top: var(--space-3); font-size: 12px; color: var(--secondary); text-align: center;">
+                ⚠️ 具体数量需在下一步配置规则后确定
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作栏 -->
+      <div class="action-bar">
+        <button class="btn btn-default" onclick="goBack()">← 返回上一步</button>
+        <button class="btn btn-primary" id="nextBtn" disabled onclick="nextStep()">
+          下一步：配置生成规则 →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 标签数据
+    const tagData = {
+      material_decompress: { name: '解压素材', count: 12345 },
+      material_scroll: { name: '滚屏素材', count: 8967 },
+      material_adx: { name: 'ADX素材', count: 5432 },
+      material_high_exposure: { name: '高曝光素材', count: 3456 },
+      material_high_click: { name: '高点击素材', count: 2341 },
+      material_new: { name: '新素材', count: 1234 },
+      book_hot: { name: '爆款小说', count: 234 },
+      book_high_conversion: { name: '高转化小说', count: 156 },
+      book_new: { name: '新上架小说', count: 189 },
+      book_top_author: { name: '头部作者作品', count: 123 },
+      book_new_author: { name: '新人作者作品', count: 234 },
+      book_badao_hot: { name: '霸道总裁爆款', count: 89 },
+      book_xuanhuan_hot: { name: '玄幻修仙热门', count: 67 }
+    };
+
+    // 选中的标签
+    const selectedTags = {
+      material: [],
+      book: []
+    };
+
+    // 上一步的数据
+    let prevStepData = {};
+
+    // 切换标签（详细卡片）
+    function toggleTag(element, type) {
+      const tagId = element.getAttribute('data-tag-id');
+      const checkbox = element.querySelector('.tag-card-checkbox');
+
+      if (element.classList.contains('selected')) {
+        element.classList.remove('selected');
+        checkbox.checked = false;
+        selectedTags[type] = selectedTags[type].filter(id => id !== tagId);
+      } else {
+        element.classList.add('selected');
+        checkbox.checked = true;
+        selectedTags[type].push(tagId);
+      }
+
+      updatePreview();
+      validateForm();
+    }
+
+    // 切换标签（按钮式）
+    function toggleButtonTag(element, type) {
+      const tagId = element.getAttribute('data-tag-id');
+
+      if (element.classList.contains('selected')) {
+        element.classList.remove('selected');
+        selectedTags[type] = selectedTags[type].filter(id => id !== tagId);
+      } else {
+        element.classList.add('selected');
+        selectedTags[type].push(tagId);
+      }
+
+      updatePreview();
+      validateForm();
+    }
+
+    // 快速选择
+    function quickSelect(tagId) {
+      const element = document.querySelector(`[data-tag-id="${tagId}"]`);
+      if (element) {
+        toggleTag(element, 'book');
+      } else {
+        // 如果元素不存在，直接添加
+        selectedTags.book.push(tagId);
+        updatePreview();
+        validateForm();
+      }
+      Message.success('已快速选择该标签');
+    }
+
+    // 更新预览
+    function updatePreview() {
+      // 更新素材标签
+      const materialTagCount = selectedTags.material.length;
+      let materialTotalCount = 0;
+
+      document.getElementById('materialBadge').textContent = `已选 ${materialTagCount} 个标签`;
+      document.getElementById('previewMaterialTagCount').textContent = materialTagCount;
+
+      if (materialTagCount > 0) {
+        let html = '';
+        selectedTags.material.forEach(tagId => {
+          const tag = tagData[tagId];
+          if (tag) {
+            materialTotalCount += tag.count;
+            html += `
+              <div class="preview-tag-item">
+                <div class="preview-tag-name">├─ ${tag.name}</div>
+                <div class="preview-tag-count">${tag.count}个素材</div>
+              </div>
+            `;
+          }
+        });
+        document.getElementById('previewMaterialTags').innerHTML = html;
+      } else {
+        document.getElementById('previewMaterialTags').innerHTML = '<div style="font-size: 13px; color: var(--secondary);">暂无选择</div>';
+      }
+
+      const uniqueMaterialCount = materialTagCount > 0 ? Math.floor(materialTotalCount * 0.6) : 0;
+      document.getElementById('previewMaterialTotal').textContent = uniqueMaterialCount;
+
+      // 更新小说标签
+      const bookTagCount = selectedTags.book.length;
+      let bookTotalCount = 0;
+
+      document.getElementById('bookBadge').textContent = `已选 ${bookTagCount} 个标签`;
+      document.getElementById('bookCount').textContent = bookTagCount;
+      document.getElementById('previewBookTagCount').textContent = bookTagCount;
+
+      if (bookTagCount > 0) {
+        let html = '';
+        selectedTags.book.forEach(tagId => {
+          const tag = tagData[tagId];
+          if (tag) {
+            bookTotalCount += tag.count;
+            html += `
+              <div class="preview-tag-item">
+                <div class="preview-tag-name">├─ ${tag.name}</div>
+                <div class="preview-tag-count">${tag.count}本小说</div>
+              </div>
+            `;
+          }
+        });
+        document.getElementById('previewBookTags').innerHTML = html;
+      } else {
+        document.getElementById('previewBookTags').innerHTML = '<div style="font-size: 13px; color: var(--secondary);">暂无选择</div>';
+      }
+
+      const uniqueBookCount = bookTagCount > 0 ? Math.floor(bookTotalCount * 0.8) : 0;
+      document.getElementById('bookMatchCount').textContent = uniqueBookCount;
+      document.getElementById('previewBookTotal').textContent = uniqueBookCount;
+
+      // 更新预估数量（简化计算）
+      const subjectCount = prevStepData.subjectCount || 0;
+      const projectCount = prevStepData.projectCount || 0;
+      let estimatedCount = 0;
+
+      if (subjectCount && projectCount && uniqueBookCount) {
+        // 简化：主体数 × 项目数 × 小说数 / 100
+        estimatedCount = Math.floor(subjectCount * projectCount * uniqueBookCount / 100);
+      }
+
+      document.getElementById('estimatedCount').textContent = estimatedCount;
+    }
+
+    // 表单验证
+    function validateForm() {
+      const isValid = selectedTags.material.length > 0 && selectedTags.book.length > 0;
+      document.getElementById('nextBtn').disabled = !isValid;
+    }
+
+    // 返回
+    function goBack() {
+      window.location.href = 'tag-selection-step1.html';
+    }
+
+    // 保存草稿
+    function saveAsDraft() {
+      DataStore.save('selectedTags_step2', selectedTags);
+      Message.success('草稿已保存');
+    }
+
+    // 下一步
+    function nextStep() {
+      if (selectedTags.material.length === 0 || selectedTags.book.length === 0) {
+        Message.error('请至少选择一个素材标签和一个小说标签');
+        return;
+      }
+
+      // 合并所有标签
+      const allTags = {
+        ...DataStore.load('selectedTags_step1'),
+        ...selectedTags
+      };
+
+      DataStore.save('selectedTags_all', allTags);
+      Message.success('标签已保存，进入规则配置...');
+
+      setTimeout(() => {
+        window.location.href = 'tag-rule-config.html';
+      }, 500);
+    }
+
+    // 页面加载时恢复数据
+    window.addEventListener('DOMContentLoaded', () => {
+      // 加载上一步数据
+      const step1Data = DataStore.load('selectedTags_step1');
+      if (step1Data) {
+        const subjectCount = step1Data.subject ? step1Data.subject.length * 20 : 0;
+        const projectCount = step1Data.project ? step1Data.project.length * 100 : 0;
+
+        prevStepData = { subjectCount, projectCount };
+
+        document.getElementById('prevSubjectCount').textContent = subjectCount;
+        document.getElementById('prevProjectCount').textContent = projectCount;
+      }
+
+      // 加载草稿
+      const savedTags = DataStore.load('selectedTags_step2');
+      if (savedTags) {
+        selectedTags.material = savedTags.material || [];
+        selectedTags.book = savedTags.book || [];
+
+        // 恢复选中状态
+        selectedTags.material.forEach(tagId => {
+          const element = document.querySelector(`[data-tag-id="${tagId}"]`);
+          if (element) {
+            element.classList.add('selected');
+            const checkbox = element.querySelector('.tag-card-checkbox');
+            if (checkbox) checkbox.checked = true;
+          }
+        });
+
+        selectedTags.book.forEach(tagId => {
+          const element = document.querySelector(`[data-tag-id="${tagId}"]`);
+          if (element) {
+            element.classList.add('selected');
+            const checkbox = element.querySelector('.tag-card-checkbox');
+            if (checkbox) checkbox.checked = true;
+          }
+        });
+
+        updatePreview();
+        validateForm();
+      }
+    });
+  </script>
+</body>
+</html>

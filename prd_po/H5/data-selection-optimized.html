@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据维度选择 - 优化师批量创编（大数据优化版）</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .selection-container {
+      display: flex;
+      gap: var(--space-6);
+      min-height: calc(100vh - 64px - 100px);
+    }
+
+    .selection-left {
+      flex: 1;
+      max-width: 800px;
+    }
+
+    .selection-right {
+      width: 320px;
+      position: sticky;
+      top: var(--space-6);
+      height: fit-content;
+    }
+
+    .dimension-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+
+    .dimension-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .dimension-count-badge {
+      font-size: 14px;
+      color: var(--primary-6);
+      font-weight: 500;
+    }
+
+    /* 已选项区域 */
+    .selected-area {
+      background: var(--primary-1);
+      border: 1px solid var(--primary-3);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      margin-bottom: var(--space-3);
+      min-height: 46px;
+    }
+
+    .selected-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+
+    .selected-label {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .selected-clear {
+      font-size: 12px;
+      color: var(--primary-6);
+      cursor: pointer;
+    }
+
+    .selected-clear:hover {
+      text-decoration: underline;
+    }
+
+    .selection-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .selection-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: var(--white);
+      border: 1px solid var(--primary-4);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .selection-tag-close {
+      cursor: pointer;
+      color: var(--error);
+      font-weight: bold;
+    }
+
+    .selection-tag-close:hover {
+      color: var(--error-7);
+    }
+
+    .selection-tag-more {
+      background: var(--gray-2);
+      border-color: var(--gray-4);
+      color: var(--secondary);
+    }
+
+    /* 搜索框 */
+    .search-box {
+      position: relative;
+      margin-bottom: var(--space-3);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: var(--space-2) var(--space-10) var(--space-2) var(--space-3);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-6);
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary-2);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: var(--space-3);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--secondary);
+      pointer-events: none;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: var(--space-8);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--secondary);
+      cursor: pointer;
+      font-size: 16px;
+      display: none;
+    }
+
+    .search-clear.active {
+      display: block;
+    }
+
+    .search-clear:hover {
+      color: var(--error);
+    }
+
+    /* 列表容器 */
+    .list-container {
+      border: 1px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      height: 300px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .list-item {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--gray-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      cursor: pointer;
+      transition: background var(--transition-base);
+      box-sizing: border-box;
+    }
+
+    .list-item:hover {
+      background: var(--gray-1);
+    }
+
+    .list-item.selected {
+      background: var(--primary-1);
+    }
+
+    .list-item-checkbox {
+      flex-shrink: 0;
+    }
+
+    .list-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .list-item-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .list-item-meta {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .list-loading {
+      text-align: center;
+      padding: var(--space-4);
+      color: var(--secondary);
+    }
+
+    .list-empty {
+      text-align: center;
+      padding: var(--space-8);
+      color: var(--secondary);
+    }
+
+    .list-footer {
+      margin-top: var(--space-2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .load-more-btn {
+      color: var(--primary-6);
+      cursor: pointer;
+    }
+
+    .load-more-btn:hover {
+      text-decoration: underline;
+    }
+
+    .load-more-btn.loading {
+      color: var(--secondary);
+      cursor: not-allowed;
+    }
+
+    /* 筛选区域 */
+    .filter-section {
+      background: var(--gray-1);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .filter-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-input-small {
+      width: 80px;
+    }
+
+    /* 预览面板 */
+    .preview-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    .preview-section {
+      margin-bottom: var(--space-5);
+    }
+
+    .preview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-section-title {
+      font-size: 14px;
+      color: var(--secondary);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-2) 0;
+      border-bottom: 1px dashed var(--gray-3);
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--text);
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--heading);
+    }
+
+    .estimate-box {
+      background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+      border: 1px solid var(--primary-3);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-align: center;
+    }
+
+    .estimate-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .estimate-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-6);
+      line-height: 1;
+    }
+
+    .estimate-unit {
+      font-size: 14px;
+      color: var(--secondary);
+      margin-top: var(--space-1);
+    }
+
+    /* 操作栏 */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-6);
+      padding: var(--space-4) var(--space-6);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      position: sticky;
+      bottom: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* 骨架屏 */
+    .skeleton {
+      background: linear-gradient(90deg, var(--gray-2) 25%, var(--gray-3) 50%, var(--gray-2) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-item {
+      height: 50px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">数据维度选择</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回</button>
+        <button class="btn btn-default" onclick="saveAsDraft()">💾 保存草稿</button>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="page-content">
+      <div class="selection-container fade-in">
+        <!-- 左侧配置区 -->
+        <div class="selection-left">
+          <!-- 1️⃣ 选择主体 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>1️⃣ 选择主体 <span style="color: var(--error);">*</span></span>
+              <span class="dimension-count-badge" id="subjectCountBadge">已选 0</span>
+            </div>
+
+            <!-- 已选项 -->
+            <div class="selected-area">
+              <div class="selected-header">
+                <span class="selected-label">已选项</span>
+                <span class="selected-clear" onclick="clearSubjects()">清空</span>
+              </div>
+              <div class="selection-tags" id="selectedSubjects"></div>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="search-box">
+              <input type="text" id="subjectSearch" class="search-input" placeholder="搜索主体名称...">
+              <span class="search-clear" id="subjectSearchClear" onclick="clearSubjectSearch()">×</span>
+              <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- 列表 -->
+            <div class="list-container" id="subjectList"></div>
+
+            <div class="list-footer">
+              <span id="subjectLoadInfo">已加载 0 个主体</span>
+            </div>
+          </div>
+
+          <!-- 2️⃣ 筛选账户 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>2️⃣ 筛选账户（可选）</span>
+              <span class="dimension-count-badge" id="accountCountBadge">符合 0 个</span>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-row">
+                <input type="checkbox" id="filterConversion">
+                <label for="filterConversion">转化数量 ></label>
+                <input type="number" id="conversionMin" class="input filter-input-small" value="6" min="0">
+              </div>
+              <div class="filter-row">
+                <input type="checkbox" id="filterOpenDays">
+                <label for="filterOpenDays">开户天数 <</label>
+                <input type="number" id="openDaysMax" class="input filter-input-small" value="5" min="0">
+              </div>
+              <div class="filter-row">
+                <input type="checkbox" id="filterAccountStatus">
+                <label for="filterAccountStatus">账户状态：</label>
+                <select id="accountStatus" class="input">
+                  <option value="running">跑量</option>
+                  <option value="testing">测试</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="font-size: 12px; color: var(--secondary); margin-top: var(--space-2);">
+              💡 提示：筛选条件将应用于已选主体下的所有账户
+            </div>
+          </div>
+
+          <!-- 3️⃣ 选择项目 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>3️⃣ 选择项目 <span style="color: var(--error);">*</span></span>
+              <span class="dimension-count-badge" id="projectCountBadge">已选 0</span>
+            </div>
+
+            <div class="selected-area">
+              <div class="selected-header">
+                <span class="selected-label">已选项</span>
+                <span class="selected-clear" onclick="clearProjects()">清空</span>
+              </div>
+              <div class="selection-tags" id="selectedProjects"></div>
+            </div>
+
+            <div class="search-box">
+              <input type="text" id="projectSearch" class="search-input" placeholder="搜索项目名称（支持2000+项目）...">
+              <span class="search-clear" id="projectSearchClear" onclick="clearProjectSearch()">×</span>
+              <span class="search-icon">🔍</span>
+            </div>
+
+            <div class="list-container" id="projectList"></div>
+
+            <div class="list-footer">
+              <span id="projectLoadInfo">已加载 0 / 2000+ 个项目</span>
+              <span class="load-more-btn" id="projectLoadMore" onclick="loadMoreProjects()">加载更多</span>
+            </div>
+          </div>
+
+          <!-- 4️⃣ 选择小说 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>4️⃣ 选择小说 <span style="color: var(--error);">*</span></span>
+              <span class="dimension-count-badge" id="bookCountBadge">已选 0</span>
+            </div>
+
+            <div class="selected-area">
+              <div class="selected-header">
+                <span class="selected-label">已选项</span>
+                <span class="selected-clear" onclick="clearBooks()">清空</span>
+              </div>
+              <div class="selection-tags" id="selectedBooks"></div>
+            </div>
+
+            <div class="search-box">
+              <input type="text" id="bookSearch" class="search-input" placeholder="搜索小说标题（支持10000+小说）...">
+              <span class="search-clear" id="bookSearchClear" onclick="clearBookSearch()">×</span>
+              <span class="search-icon">🔍</span>
+            </div>
+
+            <div class="list-container" id="bookList"></div>
+
+            <div class="list-footer">
+              <span id="bookLoadInfo">输入关键词搜索</span>
+            </div>
+          </div>
+
+          <!-- 5️⃣ 选择素材 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>5️⃣ 选择素材 <span style="color: var(--error);">*</span></span>
+              <span class="dimension-count-badge" id="materialCountBadge">已选 0</span>
+            </div>
+
+            <div class="filter-section">
+              <div style="margin-bottom: var(--space-2); font-weight: 500;">素材类型：</div>
+              <div style="display: flex; gap: var(--space-4);">
+                <label>
+                  <input type="checkbox" id="materialDecompress" checked onchange="updateMaterialTypes()">
+                  解压
+                </label>
+                <label>
+                  <input type="checkbox" id="materialScroll" checked onchange="updateMaterialTypes()">
+                  滚屏
+                </label>
+                <label>
+                  <input type="checkbox" id="materialAdx" checked onchange="updateMaterialTypes()">
+                  ADX
+                </label>
+              </div>
+            </div>
+
+            <div class="selected-area">
+              <div class="selected-header">
+                <span class="selected-label">已选素材类型</span>
+              </div>
+              <div id="selectedMaterialTypes" style="font-size: 14px; color: var(--text);"></div>
+            </div>
+
+            <div style="font-size: 12px; color: var(--secondary); margin-top: var(--space-2);">
+              💡 提示：系统将根据规则自动分配所选类型的素材
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧预览面板 -->
+        <div class="selection-right">
+          <div class="preview-card">
+            <div class="preview-section">
+              <div class="preview-section-title">
+                <span>📊</span>
+                <span>选择汇总</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">主体数量</span>
+                <span class="stat-value" id="previewSubjects">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">账户数量</span>
+                <span class="stat-value" id="previewAccounts">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">项目数量</span>
+                <span class="stat-value" id="previewProjects">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">小说数量</span>
+                <span class="stat-value" id="previewBooks">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">素材类型</span>
+                <span class="stat-value" id="previewMaterials">0</span>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-section-title">
+                <span>💡</span>
+                <span>生成预估</span>
+              </div>
+              <div class="estimate-box">
+                <div class="estimate-label">根据当前选择</div>
+                <div class="estimate-value" id="estimatedCount">0</div>
+                <div class="estimate-unit">条广告计划</div>
+              </div>
+              <div style="margin-top: var(--space-3); font-size: 12px; color: var(--secondary); text-align: center;">
+                ⚠️ 具体数量以规则配置为准
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="action-bar">
+        <button class="btn btn-default" onclick="goBack()">← 取消</button>
+        <button class="btn btn-primary" id="nextBtn" disabled onclick="nextStep()">下一步：配置规则 →</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/performance-utils.js"></script>
+  <script>
+    // 全局数据
+    let selectedData = {
+      subjects: [],
+      accounts: [],
+      projects: [],
+      books: [],
+      materials: []
+    };
+
+    // 选择管理器
+    let subjectManager, projectManager, bookManager;
+
+    // 虚拟滚动实例
+    let projectVirtualScroll;
+
+    // 搜索实例
+    let projectSearcher, bookSearcher;
+
+    // 模拟大量数据
+    const mockData = generateMockData();
+
+    // 生成模拟数据
+    function generateMockData() {
+      const data = {
+        subjects: [],
+        accounts: [],
+        projects: [],
+        books: [],
+        materials: []
+      };
+
+      // 生成50个主体
+      for (let i = 1; i <= 50; i++) {
+        data.subjects.push({
+          id: 'SUB' + String(i).padStart(3, '0'),
+          name: `主体${i}`,
+          type: i <= 30 ? 'running' : 'testing',
+          accountCount: Math.floor(Math.random() * 10) + 1,
+          conversionCount: Math.floor(Math.random() * 200)
+        });
+      }
+
+      // 生成2000个项目
+      const categories = ['霸道总裁', '穿越重生', '都市言情', '古代言情', '玄幻修仙', '悬疑推理'];
+      for (let i = 1; i <= 2000; i++) {
+        data.projects.push({
+          id: 'PRJ' + String(i).padStart(4, '0'),
+          name: `项目${i} - ${categories[i % categories.length]}`,
+          category: categories[i % categories.length]
+        });
+      }
+
+      // 生成10000个小说（搜索时动态生成）
+      // ...
+
+      // 生成素材类型
+      data.materials = [
+        { id: 'MAT_TYPE_1', type: 'decompress', name: '解压素材' },
+        { id: 'MAT_TYPE_2', type: 'scroll', name: '滚屏素材' },
+        { id: 'MAT_TYPE_3', type: 'adx', name: 'ADX素材' }
+      ];
+
+      return data;
+    }
+
+    // 初始化
+    function init() {
+      // 初始化选择管理器
+      subjectManager = new SelectionManager({
+        container: document.getElementById('selectedSubjects'),
+        idKey: 'id',
+        labelKey: 'name',
+        maxDisplay: 10,
+        onChange: (items) => {
+          selectedData.subjects = items;
+          updateSubjectBadge();
+          updateAccountFilters();
+          updatePreview();
+          validateForm();
+        }
+      });
+
+      projectManager = new SelectionManager({
+        container: document.getElementById('selectedProjects'),
+        idKey: 'id',
+        labelKey: 'name',
+        maxDisplay: 10,
+        onChange: (items) => {
+          selectedData.projects = items;
+          updateProjectBadge();
+          updatePreview();
+          validateForm();
+        }
+      });
+
+      bookManager = new SelectionManager({
+        container: document.getElementById('selectedBooks'),
+        idKey: 'id',
+        labelKey: 'name',
+        maxDisplay: 10,
+        onChange: (items) => {
+          selectedData.books = items;
+          updateBookBadge();
+          updatePreview();
+          validateForm();
+        }
+      });
+
+      // 初始化主体列表
+      renderSubjectList(mockData.subjects);
+
+      // 初始化项目虚拟滚动
+      initProjectVirtualScroll();
+
+      // 初始化搜索
+      initSearch();
+
+      // 初始化素材
+      updateMaterialTypes();
+
+      // 监听筛选条件变化
+      document.getElementById('filterConversion').addEventListener('change', updateAccountFilters);
+      document.getElementById('filterOpenDays').addEventListener('change', updateAccountFilters);
+      document.getElementById('filterAccountStatus').addEventListener('change', updateAccountFilters);
+      document.getElementById('conversionMin').addEventListener('input', updateAccountFilters);
+      document.getElementById('openDaysMax').addEventListener('input', updateAccountFilters);
+    }
+
+    // 渲染主体列表
+    function renderSubjectList(subjects) {
+      const container = document.getElementById('subjectList');
+      container.innerHTML = '';
+
+      subjects.forEach(subject => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        if (subjectManager.has(subject.id)) {
+          item.classList.add('selected');
+        }
+
+        item.innerHTML = `
+          <input type="checkbox" class="list-item-checkbox" ${subjectManager.has(subject.id) ? 'checked' : ''}>
+          <div class="list-item-info">
+            <div class="list-item-name">${subject.name}</div>
+            <div class="list-item-meta">
+              ${subject.type === 'running' ? '跑量' : '测试'} ·
+              账户:${subject.accountCount} ·
+              转化:${subject.conversionCount}
+            </div>
+          </div>
+        `;
+
+        item.addEventListener('click', () => {
+          subjectManager.toggle(subject);
+          renderSubjectList(mockData.subjects);
+        });
+
+        container.appendChild(item);
+      });
+
+      document.getElementById('subjectLoadInfo').textContent = `共 ${subjects.length} 个主体`;
+    }
+
+    // 初始化项目虚拟滚动
+    function initProjectVirtualScroll() {
+      const container = document.getElementById('projectList');
+
+      projectVirtualScroll = new VirtualScroll({
+        container: container,
+        items: mockData.projects.slice(0, 100), // 首次加载100条
+        itemHeight: 50,
+        buffer: 5,
+        renderItem: (project, index) => {
+          const item = document.createElement('div');
+          item.className = 'list-item';
+          if (projectManager.has(project.id)) {
+            item.classList.add('selected');
+          }
+
+          item.innerHTML = `
+            <input type="checkbox" class="list-item-checkbox" ${projectManager.has(project.id) ? 'checked' : ''}>
+            <div class="list-item-info">
+              <div class="list-item-name">${project.name}</div>
+              <div class="list-item-meta">${project.category}</div>
+            </div>
+          `;
+
+          return item;
+        },
+        onItemClick: (project) => {
+          projectManager.toggle(project);
+          projectVirtualScroll.render(); // 重新渲染
+        }
+      });
+
+      document.getElementById('projectLoadInfo').textContent = `已加载 100 / 2000+ 个项目`;
+    }
+
+    // 加载更多项目
+    function loadMoreProjects() {
+      const currentLength = projectVirtualScroll.items.length;
+      const nextBatch = mockData.projects.slice(currentLength, currentLength + 100);
+
+      if (nextBatch.length === 0) {
+        document.getElementById('projectLoadMore').textContent = '已加载全部';
+        document.getElementById('projectLoadMore').classList.add('loading');
+        return;
+      }
+
+      projectVirtualScroll.update([...projectVirtualScroll.items, ...nextBatch]);
+      document.getElementById('projectLoadInfo').textContent =
+        `已加载 ${projectVirtualScroll.items.length} / 2000+ 个项目`;
+
+      Message.success(`已加载 ${nextBatch.length} 个项目`);
+    }
+
+    // 初始化搜索
+    function initSearch() {
+      // 项目搜索
+      projectSearcher = new SmartSearch({
+        searchFn: (query) => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              const results = mockData.projects.filter(p =>
+                p.name.toLowerCase().includes(query) ||
+                p.category.toLowerCase().includes(query)
+              );
+              resolve(results);
+            }, 300);
+          });
+        },
+        debounceMs: 500
+      });
+
+      const projectSearchInput = document.getElementById('projectSearch');
+      projectSearchInput.addEventListener('input', async (e) => {
+        const query = e.target.value.trim();
+
+        document.getElementById('projectSearchClear').classList.toggle('active', query.length > 0);
+
+        if (query.length === 0) {
+          // 恢复原始列表
+          projectVirtualScroll.update(mockData.projects.slice(0, 100));
+          document.getElementById('projectLoadInfo').textContent = '已加载 100 / 2000+ 个项目';
+          document.getElementById('projectLoadMore').style.display = 'inline';
+          return;
+        }
+
+        const results = await projectSearcher.search(query);
+        if (results) {
+          projectVirtualScroll.update(results);
+          document.getElementById('projectLoadInfo').textContent = `搜索到 ${results.length} 个项目`;
+          document.getElementById('projectLoadMore').style.display = 'none';
+        }
+      });
+
+      // 小说搜索
+      bookSearcher = new SmartSearch({
+        searchFn: (query) => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              // 模拟生成搜索结果
+              const results = [];
+              for (let i = 1; i <= 50; i++) {
+                results.push({
+                  id: 'BOOK' + Date.now() + i,
+                  name: `《${query}相关小说${i}》`,
+                  author: `作者${i}`
+                });
+              }
+              resolve(results);
+            }, 300);
+          });
+        },
+        debounceMs: 500
+      });
+
+      const bookSearchInput = document.getElementById('bookSearch');
+      bookSearchInput.addEventListener('input', async (e) => {
+        const query = e.target.value.trim();
+
+        document.getElementById('bookSearchClear').classList.toggle('active', query.length > 0);
+
+        if (query.length === 0) {
+          document.getElementById('bookList').innerHTML = '<div class="list-empty">请输入关键词搜索小说</div>';
+          document.getElementById('bookLoadInfo').textContent = '输入关键词搜索';
+          return;
+        }
+
+        if (query.length < 2) {
+          return;
+        }
+
+        document.getElementById('bookList').innerHTML = '<div class="list-loading">搜索中...</div>';
+
+        const results = await bookSearcher.search(query);
+        if (results && results.length > 0) {
+          renderBookList(results);
+          document.getElementById('bookLoadInfo').textContent = `搜索到 ${results.length} 个结果`;
+        } else {
+          document.getElementById('bookList').innerHTML = '<div class="list-empty">未找到相关小说</div>';
+          document.getElementById('bookLoadInfo').textContent = '未找到结果';
+        }
+      });
+    }
+
+    // 渲染小说列表
+    function renderBookList(books) {
+      const container = document.getElementById('bookList');
+      container.innerHTML = '';
+
+      books.forEach(book => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        if (bookManager.has(book.id)) {
+          item.classList.add('selected');
+        }
+
+        item.innerHTML = `
+          <input type="checkbox" class="list-item-checkbox" ${bookManager.has(book.id) ? 'checked' : ''}>
+          <div class="list-item-info">
+            <div class="list-item-name">${book.name}</div>
+            <div class="list-item-meta">${book.author || '未知作者'}</div>
+          </div>
+        `;
+
+        item.addEventListener('click', () => {
+          bookManager.toggle(book);
+          renderBookList(books);
+        });
+
+        container.appendChild(item);
+      });
+    }
+
+    // 清除搜索
+    function clearProjectSearch() {
+      document.getElementById('projectSearch').value = '';
+      document.getElementById('projectSearchClear').classList.remove('active');
+      projectVirtualScroll.update(mockData.projects.slice(0, 100));
+      document.getElementById('projectLoadInfo').textContent = '已加载 100 / 2000+ 个项目';
+      document.getElementById('projectLoadMore').style.display = 'inline';
+    }
+
+    function clearBookSearch() {
+      document.getElementById('bookSearch').value = '';
+      document.getElementById('bookSearchClear').classList.remove('active');
+      document.getElementById('bookList').innerHTML = '<div class="list-empty">请输入关键词搜索小说</div>';
+      document.getElementById('bookLoadInfo').textContent = '输入关键词搜索';
+    }
+
+    function clearSubjectSearch() {
+      document.getElementById('subjectSearch').value = '';
+      document.getElementById('subjectSearchClear').classList.remove('active');
+    }
+
+    // 更新账户筛选
+    function updateAccountFilters() {
+      // 模拟筛选逻辑
+      const useConversion = document.getElementById('filterConversion').checked;
+      const useOpenDays = document.getElementById('filterOpenDays').checked;
+      const useStatus = document.getElementById('filterAccountStatus').checked;
+
+      const conversionMin = parseInt(document.getElementById('conversionMin').value) || 0;
+
+      // 简化计算：每个主体平均5个账户，50%符合条件
+      let accountCount = selectedData.subjects.length * 5;
+      if (useConversion || useOpenDays || useStatus) {
+        accountCount = Math.floor(accountCount * 0.5);
+      }
+
+      selectedData.accounts = Array(accountCount).fill({});
+
+      document.getElementById('accountCountBadge').textContent = `符合 ${accountCount} 个`;
+      document.getElementById('previewAccounts').textContent = accountCount;
+    }
+
+    // 更新素材类型
+    function updateMaterialTypes() {
+      const types = [];
+      if (document.getElementById('materialDecompress').checked) types.push('解压');
+      if (document.getElementById('materialScroll').checked) types.push('滚屏');
+      if (document.getElementById('materialAdx').checked) types.push('ADX');
+
+      selectedData.materials = mockData.materials.filter(m => {
+        if (m.type === 'decompress') return document.getElementById('materialDecompress').checked;
+        if (m.type === 'scroll') return document.getElementById('materialScroll').checked;
+        if (m.type === 'adx') return document.getElementById('materialAdx').checked;
+        return false;
+      });
+
+      document.getElementById('selectedMaterialTypes').textContent =
+        types.length > 0 ? types.join('、') : '未选择';
+      document.getElementById('materialCountBadge').textContent = `已选 ${types.length} 类`;
+      document.getElementById('previewMaterials').textContent = types.length + ' 类';
+
+      validateForm();
+    }
+
+    // 更新徽章
+    function updateSubjectBadge() {
+      document.getElementById('subjectCountBadge').textContent = `已选 ${selectedData.subjects.length}`;
+    }
+
+    function updateProjectBadge() {
+      document.getElementById('projectCountBadge').textContent = `已选 ${selectedData.projects.length}`;
+    }
+
+    function updateBookBadge() {
+      document.getElementById('bookCountBadge').textContent = `已选 ${selectedData.books.length}`;
+    }
+
+    // 更新预览
+    function updatePreview() {
+      document.getElementById('previewSubjects').textContent = selectedData.subjects.length;
+      document.getElementById('previewProjects').textContent = selectedData.projects.length;
+      document.getElementById('previewBooks').textContent = selectedData.books.length;
+    }
+
+    // 清空选择
+    function clearSubjects() {
+      subjectManager.clear();
+      renderSubjectList(mockData.subjects);
+    }
+
+    function clearProjects() {
+      projectManager.clear();
+      projectVirtualScroll.render();
+    }
+
+    function clearBooks() {
+      bookManager.clear();
+      clearBookSearch();
+    }
+
+    // 表单验证
+    function validateForm() {
+      const isValid =
+        selectedData.subjects.length > 0 &&
+        selectedData.projects.length > 0 &&
+        selectedData.books.length > 0 &&
+        selectedData.materials.length > 0;
+
+      document.getElementById('nextBtn').disabled = !isValid;
+    }
+
+    // 返回
+    function goBack() {
+      window.location.href = 'create-new.html';
+    }
+
+    // 保存草稿
+    function saveAsDraft() {
+      DataStore.save('selectedDimensions', selectedData);
+      Message.success('草稿已保存');
+    }
+
+    // 下一步
+    function nextStep() {
+      if (!validateForm()) {
+        Message.error('请完成所有必填项');
+        return;
+      }
+
+      DataStore.save('selectedDimensions', selectedData);
+      Message.success('数据已保存，正在跳转...');
+
+      setTimeout(() => {
+        window.location.href = 'rule-config.html';
+      }, 500);
+    }
+
+    // 页面加载
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

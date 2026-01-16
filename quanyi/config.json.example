@@ -1,0 +1,7 @@
+{
+  "feishu_app_id": "YOUR_FEISHU_APP_ID",
+  "feishu_app_secret": "YOUR_FEISHU_APP_SECRET",
+  "claude_api_key": "YOUR_CLAUDE_API_KEY",
+  "output_dir": "../doc",
+  "prompt_template_path": "prompt_template.txt"
+}

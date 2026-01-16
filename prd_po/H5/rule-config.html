@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配置生成规则 - 广告批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .config-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 800px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .config-main {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-selector {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .mode-option {
+      flex: 1;
+      padding: 20px;
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .mode-option:hover {
+      border-color: var(--primary-6);
+    }
+
+    .mode-option.active {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .mode-option-title {
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 4px;
+    }
+
+    .mode-option-desc {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .template-card {
+      padding: 16px;
+      border: 1px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all var(--transition-base);
+    }
+
+    .template-card:hover {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .template-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 4px;
+    }
+
+    .template-info p {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: 4px;
+    }
+
+    .template-info .estimate {
+      font-size: 12px;
+      color: var(--primary-6);
+      font-weight: 600;
+    }
+
+    .rule-config {
+      background: var(--gray-1);
+      padding: 20px;
+      border-radius: var(--radius-md);
+      margin-top: 16px;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .form-row label {
+      font-size: 14px;
+      color: var(--text);
+      min-width: 120px;
+    }
+
+    .form-row input[type="number"] {
+      width: 80px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-config {
+      margin-left: 32px;
+      margin-top: 8px;
+      padding-left: 16px;
+      border-left: 2px solid var(--gray-3);
+    }
+
+    .preview-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--heading);
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-2);
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--secondary);
+      font-size: 14px;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--heading);
+    }
+
+    .estimate-box {
+      background: var(--primary-1);
+      border: 1px solid var(--primary-3);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .estimate-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: 4px;
+    }
+
+    .estimate-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-6);
+    }
+
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-2);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">配置生成规则</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回</button>
+        <button class="btn btn-default" onclick="saveAsDraft()">💾 保存草稿</button>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="config-container fade-in">
+      <!-- 左侧配置区 -->
+      <div class="config-main">
+        <!-- 规则模式选择 -->
+        <div class="section">
+          <div class="section-title">
+            <span>1️⃣</span>
+            <span>选择规则模式</span>
+          </div>
+          <div class="mode-selector">
+            <div class="mode-option active" id="modeFullCombination" onclick="selectMode('full-combination')">
+              <div class="mode-option-title">◉ 全量组合</div>
+              <div class="mode-option-desc">根据维度自动组合生成</div>
+            </div>
+            <div class="mode-option" id="modeCustom" onclick="selectMode('custom')">
+              <div class="mode-option-title">○ 自定义规则</div>
+              <div class="mode-option-desc">灵活配置生成条件</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 规则模板 -->
+        <div class="section">
+          <div class="section-title">
+            <span>⚡</span>
+            <span>常用规则模板</span>
+          </div>
+          <div class="template-list">
+            <div class="template-card">
+              <div class="template-info">
+                <h4>规则模板1：全量组合</h4>
+                <p>6个主体 × 4项目/主体 × 4广告/项目 × 4素材/广告</p>
+                <p class="estimate">预计生成：384 条广告</p>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="useTemplate('template1')">使用模板</button>
+            </div>
+
+            <div class="template-card">
+              <div class="template-info">
+                <h4>规则模板2：跑量主体+转化>6</h4>
+                <p>每账户6广告（3解压+3滚屏）</p>
+                <p class="estimate">预计生成：根据筛选账户数</p>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="useTemplate('template2')">使用模板</button>
+            </div>
+
+            <div class="template-card">
+              <div class="template-info">
+                <h4>规则模板3：跑量主体+转化>6+开户<5天</h4>
+                <p>每账户6广告（3解压ADX+自剪辑+3滚屏）</p>
+                <p class="estimate">预计生成：根据筛选账户数</p>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="useTemplate('template3')">使用模板</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 全量组合配置 -->
+        <div class="section" id="fullCombinationConfig">
+          <div class="section-title">
+            <span>2️⃣</span>
+            <span>全量组合配置</span>
+          </div>
+          <div class="rule-config">
+            <div class="form-row">
+              <label>每个主体下项目数：</label>
+              <input type="number" id="projectsPerSubject" value="4" min="1" max="10" onchange="updateEstimate()">
+              <span class="text-secondary">个</span>
+            </div>
+            <div class="form-row">
+              <label>每个项目下广告数：</label>
+              <input type="number" id="adsPerProject" value="4" min="1" max="10" onchange="updateEstimate()">
+              <span class="text-secondary">个</span>
+            </div>
+            <div class="form-row">
+              <label>每个广告下素材数：</label>
+              <input type="number" id="materialsPerAd" value="4" min="1" max="10" onchange="updateEstimate()">
+              <span class="text-secondary">个</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 自定义规则配置 -->
+        <div class="section" id="customRuleConfig" style="display: none;">
+          <div class="section-title">
+            <span>2️⃣</span>
+            <span>自定义规则配置</span>
+          </div>
+
+          <!-- 筛选条件 -->
+          <div class="rule-config">
+            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 600;">筛选条件</h4>
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="condSubjectStatus" onchange="updateEstimate()">
+                <label for="condSubjectStatus">主体状态：</label>
+                <select id="subjectStatus" style="width: 120px;">
+                  <option value="running">跑量</option>
+                  <option value="testing">测试</option>
+                </select>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="condConversion" onchange="updateEstimate()">
+                <label for="condConversion">转化数量 ></label>
+                <input type="number" id="conversionMin" value="6" min="0" style="width: 80px;">
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="condOpenDays" onchange="updateEstimate()">
+                <label for="condOpenDays">开户天数 <</label>
+                <input type="number" id="openDaysMax" value="5" min="0" style="width: 80px;">
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="condAccountStatus" onchange="updateEstimate()">
+                <label for="condAccountStatus">账户状态：</label>
+                <select id="accountStatus" style="width: 120px;">
+                  <option value="running">跑量</option>
+                  <option value="testing">测试</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 生成配置 -->
+          <div class="rule-config" style="margin-top: 16px;">
+            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 600;">生成配置</h4>
+            <div class="form-row">
+              <label>
+                <input type="checkbox" id="perAccount" checked onchange="updateEstimate()">
+                按账户生成
+              </label>
+            </div>
+            <div class="form-row">
+              <label>每个账户广告数：</label>
+              <input type="number" id="adCount" value="6" min="1" max="20" onchange="updateEstimate()">
+              <span class="text-secondary">个</span>
+            </div>
+            <div class="sub-config">
+              <div class="form-row">
+                <label>解压素材：</label>
+                <input type="number" id="decompressCount" value="3" min="0" max="10" onchange="updateBreakdown()">
+                <span class="text-secondary">个</span>
+              </div>
+              <div class="form-row">
+                <label>滚屏素材：</label>
+                <input type="number" id="scrollCount" value="3" min="0" max="10" onchange="updateBreakdown()">
+                <span class="text-secondary">个</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 素材分配策略 -->
+          <div class="rule-config" style="margin-top: 16px;">
+            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 600;">素材分配策略</h4>
+
+            <div style="margin-bottom: 16px;">
+              <div style="font-weight: 600; margin-bottom: 8px;">解压素材：</div>
+              <div class="checkbox-group">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="decompressAdx">
+                  <label for="decompressAdx">ADX按曝光降序：</label>
+                  <input type="number" id="decompressAdxCount" value="1" min="0" max="5" style="width: 60px;">
+                  <span class="text-secondary">个</span>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="decompressSelfEdit">
+                  <label for="decompressSelfEdit">自剪辑素材：</label>
+                  <input type="number" id="decompressSelfEditCount" value="2" min="0" max="5" style="width: 60px;">
+                  <span class="text-secondary">个</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-weight: 600; margin-bottom: 8px;">滚屏素材：</div>
+              <div class="checkbox-group">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="scrollByClicks" checked>
+                  <label for="scrollByClicks">按点击降序：</label>
+                  <input type="number" id="scrollByClicksCount" value="3" min="0" max="5" style="width: 60px;">
+                  <span class="text-secondary">个</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-bar">
+          <button class="btn btn-default" onclick="goBack()">← 上一步</button>
+          <div class="flex gap-3">
+            <button class="btn btn-default" onclick="saveAsDraft()">保存草稿</button>
+            <button class="btn btn-primary" onclick="nextStep()">下一步：预览结果 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧预览面板 -->
+      <div class="preview-panel">
+        <div class="preview-title">📊 生成预估</div>
+
+        <div class="stat-item">
+          <span class="stat-label">主体数量</span>
+          <span class="stat-value" id="previewSubjects">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">账户数量</span>
+          <span class="stat-value" id="previewAccounts">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">项目数量</span>
+          <span class="stat-value" id="previewProjects">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">小说数量</span>
+          <span class="stat-value" id="previewBooks">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">素材数量</span>
+          <span class="stat-value" id="previewMaterials">0</span>
+        </div>
+
+        <div class="estimate-box">
+          <div class="estimate-label">预计生成广告计划</div>
+          <div class="estimate-value" id="estimatedCount">0</div>
+          <div class="estimate-label">条</div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 12px; background: var(--warning-1); border-radius: var(--radius-md); font-size: 12px; color: var(--warning-7);">
+          💡 提示：修改配置后会实时更新预估数量
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/generation-engine.js"></script>
+  <script>
+    let engine = new GenerationEngine();
+    let currentMode = 'full-combination';
+    let selectedDimensions = {};
+
+    // 初始化
+    function init() {
+      // 加载选中的维度数据
+      selectedDimensions = DataStore.load('selectedDimensions', {
+        subjects: [],
+        accounts: [],
+        projects: [],
+        books: [],
+        materials: []
+      });
+
+      engine.setSelectedData(selectedDimensions);
+      updatePreview();
+      updateEstimate();
+    }
+
+    // 更新预览面板
+    function updatePreview() {
+      document.getElementById('previewSubjects').textContent = selectedDimensions.subjects.length;
+      document.getElementById('previewAccounts').textContent = selectedDimensions.accounts.length;
+      document.getElementById('previewProjects').textContent = selectedDimensions.projects.length;
+      document.getElementById('previewBooks').textContent = selectedDimensions.books.length;
+      document.getElementById('previewMaterials').textContent = selectedDimensions.materials.length;
+    }
+
+    // 选择规则模式
+    function selectMode(mode) {
+      currentMode = mode;
+
+      // 更新UI
+      document.getElementById('modeFullCombination').classList.toggle('active', mode === 'full-combination');
+      document.getElementById('modeCustom').classList.toggle('active', mode === 'custom');
+
+      document.getElementById('modeFullCombination').querySelector('.mode-option-title').textContent =
+        mode === 'full-combination' ? '◉ 全量组合' : '○ 全量组合';
+      document.getElementById('modeCustom').querySelector('.mode-option-title').textContent =
+        mode === 'custom' ? '◉ 自定义规则' : '○ 自定义规则';
+
+      // 显示/隐藏配置区
+      document.getElementById('fullCombinationConfig').style.display =
+        mode === 'full-combination' ? 'block' : 'none';
+      document.getElementById('customRuleConfig').style.display =
+        mode === 'custom' ? 'block' : 'none';
+
+      updateEstimate();
+    }
+
+    // 使用模板
+    function useTemplate(templateId) {
+      const template = window.RULE_TEMPLATES[templateId];
+      if (!template) return;
+
+      Message.success(`已加载模板：${template.name}`);
+
+      currentMode = template.mode;
+      selectMode(currentMode);
+
+      if (template.mode === 'full-combination') {
+        document.getElementById('projectsPerSubject').value = template.generation.projectsPerSubject || 4;
+        document.getElementById('adsPerProject').value = template.generation.adsPerProject || 4;
+        document.getElementById('materialsPerAd').value = template.generation.materialsPerAd || 4;
+      } else if (template.mode === 'custom') {
+        // 设置条件
+        if (template.conditions) {
+          document.getElementById('condSubjectStatus').checked = !!template.conditions.subjectStatus;
+          document.getElementById('subjectStatus').value = template.conditions.subjectStatus || 'running';
+
+          document.getElementById('condConversion').checked = template.conditions.conversionMin !== undefined;
+          document.getElementById('conversionMin').value = template.conditions.conversionMin || 6;
+
+          document.getElementById('condOpenDays').checked = template.conditions.openDaysMax !== undefined;
+          document.getElementById('openDaysMax').value = template.conditions.openDaysMax || 5;
+
+          document.getElementById('condAccountStatus').checked = !!template.conditions.accountStatus;
+          document.getElementById('accountStatus').value = template.conditions.accountStatus || 'running';
+        }
+
+        // 设置生成配置
+        if (template.generation) {
+          document.getElementById('perAccount').checked = template.generation.perAccount || false;
+          document.getElementById('adCount').value = template.generation.adCount || 6;
+
+          if (template.generation.breakdown) {
+            document.getElementById('decompressCount').value = template.generation.breakdown.decompress || 3;
+            document.getElementById('scrollCount').value = template.generation.breakdown.scroll || 3;
+          }
+
+          // 设置素材策略
+          if (template.generation.materialStrategy) {
+            const decompressStrategy = template.generation.materialStrategy.decompress || [];
+            const adxStrategy = decompressStrategy.find(s => s.source === 'adx');
+            const selfEditStrategy = decompressStrategy.find(s => s.source === 'self-edit');
+
+            if (adxStrategy) {
+              document.getElementById('decompressAdx').checked = true;
+              document.getElementById('decompressAdxCount').value = adxStrategy.count || 1;
+            }
+            if (selfEditStrategy) {
+              document.getElementById('decompressSelfEdit').checked = true;
+              document.getElementById('decompressSelfEditCount').value = selfEditStrategy.count || 2;
+            }
+
+            const scrollStrategy = template.generation.materialStrategy.scroll || [];
+            if (scrollStrategy.length > 0) {
+              document.getElementById('scrollByClicks').checked = true;
+              document.getElementById('scrollByClicksCount').value = scrollStrategy[0].count || 3;
+            }
+          }
+        }
+      }
+
+      updateEstimate();
+    }
+
+    // 更新素材分解
+    function updateBreakdown() {
+      const decompressCount = parseInt(document.getElementById('decompressCount').value) || 0;
+      const scrollCount = parseInt(document.getElementById('scrollCount').value) || 0;
+      const total = decompressCount + scrollCount;
+
+      document.getElementById('adCount').value = total;
+      updateEstimate();
+    }
+
+    // 更新预估数量
+    function updateEstimate() {
+      const rules = buildRules();
+      engine.setRules(rules);
+
+      const count = engine.calculateCount();
+      document.getElementById('estimatedCount').textContent = count;
+
+      // 更新筛选后的账户数
+      if (currentMode === 'custom') {
+        const filteredAccounts = engine.filterAccounts();
+        document.getElementById('previewAccounts').textContent = filteredAccounts.length;
+      } else {
+        document.getElementById('previewAccounts').textContent = selectedDimensions.accounts.length;
+      }
+    }
+
+    // 构建规则对象
+    function buildRules() {
+      if (currentMode === 'full-combination') {
+        return {
+          mode: 'full-combination',
+          generation: {
+            projectsPerSubject: parseInt(document.getElementById('projectsPerSubject').value) || 4,
+            adsPerProject: parseInt(document.getElementById('adsPerProject').value) || 4,
+            materialsPerAd: parseInt(document.getElementById('materialsPerAd').value) || 4
+          }
+        };
+      } else {
+        const conditions = {};
+
+        if (document.getElementById('condSubjectStatus').checked) {
+          conditions.subjectStatus = document.getElementById('subjectStatus').value;
+        }
+        if (document.getElementById('condConversion').checked) {
+          conditions.conversionMin = parseInt(document.getElementById('conversionMin').value) || 0;
+        }
+        if (document.getElementById('condOpenDays').checked) {
+          conditions.openDaysMax = parseInt(document.getElementById('openDaysMax').value) || 0;
+        }
+        if (document.getElementById('condAccountStatus').checked) {
+          conditions.accountStatus = document.getElementById('accountStatus').value;
+        }
+
+        const materialStrategy = {
+          decompress: [],
+          scroll: []
+        };
+
+        if (document.getElementById('decompressAdx').checked) {
+          materialStrategy.decompress.push({
+            source: 'adx',
+            sortBy: 'exposure',
+            count: parseInt(document.getElementById('decompressAdxCount').value) || 1
+          });
+        }
+        if (document.getElementById('decompressSelfEdit').checked) {
+          materialStrategy.decompress.push({
+            source: 'self-edit',
+            count: parseInt(document.getElementById('decompressSelfEditCount').value) || 2
+          });
+        }
+        if (document.getElementById('scrollByClicks').checked) {
+          materialStrategy.scroll.push({
+            sortBy: 'clicks',
+            count: parseInt(document.getElementById('scrollByClicksCount').value) || 3
+          });
+        }
+
+        return {
+          mode: 'custom',
+          conditions: conditions,
+          generation: {
+            perAccount: document.getElementById('perAccount').checked,
+            adCount: parseInt(document.getElementById('adCount').value) || 6,
+            breakdown: {
+              decompress: parseInt(document.getElementById('decompressCount').value) || 3,
+              scroll: parseInt(document.getElementById('scrollCount').value) || 3
+            },
+            materialStrategy: materialStrategy
+          }
+        };
+      }
+    }
+
+    // 返回上一步
+    function goBack() {
+      window.location.href = 'data-selection.html';
+    }
+
+    // 保存草稿
+    function saveAsDraft() {
+      const rules = buildRules();
+      DataStore.save('generationRules', rules);
+      Message.success('草稿已保存');
+    }
+
+    // 下一步
+    function nextStep() {
+      const rules = buildRules();
+      const count = engine.calculateCount();
+
+      if (count === 0) {
+        Message.error('预计生成数量为0，请检查配置');
+        return;
+      }
+
+      // 保存规则
+      DataStore.save('generationRules', rules);
+      Message.success('规则配置完成，正在生成预览...');
+
+      setTimeout(() => {
+        window.location.href = 'preview-result.html';
+      }, 500);
+    }
+
+    // 页面加载完成
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

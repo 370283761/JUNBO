@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 1: 选择标签 - 智能批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .tag-selection-container {
+      display: flex;
+      gap: var(--space-6);
+      min-height: calc(100vh - 64px - 100px);
+    }
+
+    .tag-left {
+      flex: 1;
+      max-width: 800px;
+    }
+
+    .tag-right {
+      width: 320px;
+      position: sticky;
+      top: var(--space-6);
+      height: fit-content;
+    }
+
+    .tag-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+
+    .tag-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-5);
+    }
+
+    .tag-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .tag-section-badge {
+      font-size: 14px;
+      color: var(--primary-6);
+      font-weight: 500;
+    }
+
+    .tag-category-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    /* 详细标签卡片 */
+    .tag-card {
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+
+    .tag-card:hover {
+      border-color: var(--primary-5);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tag-card.selected {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .tag-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .tag-card-checkbox {
+      margin-top: 2px;
+      cursor: pointer;
+    }
+
+    .tag-card-content {
+      flex: 1;
+    }
+
+    .tag-card-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-2);
+    }
+
+    .tag-card-count {
+      font-size: 14px;
+      color: var(--primary-6);
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+    }
+
+    .tag-card-rules {
+      font-size: 13px;
+      color: var(--secondary);
+      line-height: 1.6;
+    }
+
+    .tag-card-rules-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--space-1);
+    }
+
+    .tag-card-rule-item {
+      margin-left: var(--space-3);
+      padding-left: var(--space-2);
+      border-left: 2px solid var(--gray-3);
+    }
+
+    .tag-card-footer {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--gray-2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .tag-card-dynamic {
+      color: var(--success-6);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-card-time {
+      color: var(--secondary);
+    }
+
+    .tag-card-actions {
+      display: none;
+    }
+
+    .tag-card:hover .tag-card-actions {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    /* 按钮式标签（用于题材分类） */
+    .tag-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .tag-button {
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-3);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      background: var(--white);
+    }
+
+    .tag-button:hover {
+      border-color: var(--primary-5);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tag-button.selected {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .tag-button-icon {
+      font-size: 24px;
+      margin-bottom: var(--space-2);
+    }
+
+    .tag-button-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: var(--space-1);
+    }
+
+    .tag-button-count {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .tag-button.selected .tag-button-count {
+      color: var(--primary-6);
+      font-weight: 600;
+    }
+
+    /* 预览面板 */
+    .preview-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    .preview-section {
+      margin-bottom: var(--space-5);
+    }
+
+    .preview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .preview-tag-list {
+      margin-bottom: var(--space-3);
+    }
+
+    .preview-tag-item {
+      padding: var(--space-2) 0;
+      border-bottom: 1px dashed var(--gray-3);
+    }
+
+    .preview-tag-item:last-child {
+      border-bottom: none;
+    }
+
+    .preview-tag-name {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .preview-tag-count {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .preview-total {
+      padding: var(--space-3);
+      background: var(--gray-1);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .preview-total-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .preview-total-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-6);
+    }
+
+    .preview-total-unit {
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .estimate-box {
+      background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+      border: 1px solid var(--primary-3);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-align: center;
+    }
+
+    .estimate-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .estimate-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-6);
+      line-height: 1;
+    }
+
+    .estimate-unit {
+      font-size: 14px;
+      color: var(--secondary);
+      margin-top: var(--space-1);
+    }
+
+    /* 操作栏 */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-6);
+      padding: var(--space-4) var(--space-6);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      position: sticky;
+      bottom: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .create-tag-btn {
+      color: var(--primary-6);
+      border: 1px dashed var(--primary-4);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      font-size: 14px;
+    }
+
+    .create-tag-btn:hover {
+      background: var(--primary-1);
+      border-color: var(--primary-6);
+    }
+
+    .info-tip {
+      padding: var(--space-3);
+      background: var(--blue-1);
+      border-left: 3px solid var(--blue-6);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text);
+      margin-top: var(--space-3);
+    }
+
+    .steps-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+      padding: var(--space-4);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+    }
+
+    .step-item {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      right: -50%;
+      width: 100%;
+      height: 2px;
+      background: var(--gray-3);
+      z-index: -1;
+    }
+
+    .step-item.active .step-number {
+      background: var(--primary-6);
+      color: var(--white);
+    }
+
+    .step-item.completed .step-number {
+      background: var(--success-6);
+      color: var(--white);
+    }
+
+    .step-item.active:not(:last-child)::after {
+      background: var(--primary-3);
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-3);
+      color: var(--gray-6);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .step-label {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .step-item.active .step-label {
+      color: var(--primary-6);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">智能批量创编 - 选择标签</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回</button>
+        <button class="btn btn-default" onclick="saveAsDraft()">💾 保存草稿</button>
+      </div>
+    </div>
+
+    <!-- 步骤指示器 -->
+    <div class="page-content">
+      <div class="steps-indicator fade-in">
+        <div class="step-item active">
+          <div class="step-number">1</div>
+          <div class="step-label">选择标签</div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-label">配置规则</div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-label">预览计划</div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-label">提交创建</div>
+        </div>
+      </div>
+
+      <div class="tag-selection-container">
+        <!-- 左侧：标签选择区 -->
+        <div class="tag-left">
+          <!-- 1️⃣ 选择主体标签 -->
+          <div class="tag-section slide-up">
+            <div class="tag-section-header">
+              <div class="tag-section-title">
+                <span>1️⃣</span>
+                <span>选择主体标签</span>
+                <span style="color: var(--error); font-size: 14px;">*</span>
+              </div>
+              <div class="tag-section-badge" id="subjectBadge">已选 0 个标签</div>
+            </div>
+
+            <div class="tag-category-title">🏷️ 系统标签</div>
+
+            <!-- 跑量主体 -->
+            <div class="tag-card" data-tag-id="subject_running" onclick="toggleTag(this, 'subject')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">跑量主体</div>
+                  <div class="tag-card-count">📊 包含 30 个主体</div>
+
+                  <div class="tag-card-rules">
+                    <div class="tag-card-rules-title">筛选规则：</div>
+                    <div class="tag-card-rule-item">• 投放状态 = 跑量</div>
+                    <div class="tag-card-rule-item">• 最近7天有消耗</div>
+                    <div class="tag-card-rule-item">• 账户余额 > 1000元</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tag-card-footer">
+                <div class="tag-card-dynamic">💡 自动包含新增数据</div>
+                <div class="tag-card-time">更新于 2分钟前</div>
+              </div>
+            </div>
+
+            <!-- 高转化主体 -->
+            <div class="tag-card" data-tag-id="subject_high_conversion" onclick="toggleTag(this, 'subject')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">高转化主体</div>
+                  <div class="tag-card-count">📊 包含 15 个主体</div>
+
+                  <div class="tag-card-rules">
+                    <div class="tag-card-rules-title">筛选规则：</div>
+                    <div class="tag-card-rule-item">• 近30天转化数 > 100</div>
+                    <div class="tag-card-rule-item">• 转化率 > 3%</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tag-card-footer">
+                <div class="tag-card-dynamic">💡 自动包含新增数据</div>
+                <div class="tag-card-time">更新于 5分钟前</div>
+              </div>
+            </div>
+
+            <!-- 新主体 -->
+            <div class="tag-card" data-tag-id="subject_new" onclick="toggleTag(this, 'subject')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">新主体</div>
+                  <div class="tag-card-count">📊 包含 8 个主体</div>
+
+                  <div class="tag-card-rules">
+                    <div class="tag-card-rules-title">筛选规则：</div>
+                    <div class="tag-card-rule-item">• 开户天数 < 7天</div>
+                    <div class="tag-card-rule-item">• 测试阶段</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tag-card-footer">
+                <div class="tag-card-dynamic">💡 自动包含新增数据</div>
+                <div class="tag-card-time">更新于 10分钟前</div>
+              </div>
+            </div>
+
+            <div class="tag-category-title" style="margin-top: var(--space-4);">🏷️ 我的自定义标签</div>
+
+            <!-- 自定义标签示例 -->
+            <div class="tag-card" data-tag-id="subject_beijing_vip" onclick="toggleTag(this, 'subject')">
+              <div class="tag-card-header">
+                <input type="checkbox" class="tag-card-checkbox" onclick="event.stopPropagation()">
+                <div class="tag-card-content">
+                  <div class="tag-card-name">北京地区VIP客户</div>
+                  <div class="tag-card-count">📊 包含 5 个主体</div>
+
+                  <div class="tag-card-rules">
+                    <div class="tag-card-rules-title">筛选规则：</div>
+                    <div class="tag-card-rule-item">• 地区 = 北京</div>
+                    <div class="tag-card-rule-item">• 客户类型 = VIP</div>
+                    <div class="tag-card-rule-item">• 投放状态 = 跑量</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tag-card-footer">
+                <div class="tag-card-dynamic">💡 自动包含新增数据</div>
+                <div class="tag-card-time">创建于 2天前</div>
+              </div>
+            </div>
+
+            <div class="create-tag-btn" onclick="createNewTag('subject')">
+              + 创建新的主体标签
+            </div>
+
+            <div class="info-tip">
+              💡 <strong>提示：</strong>标签会自动包含新增的主体，无需手动更新。已选择 <span id="subjectCount">0</span> 个标签，实时匹配 <span id="subjectMatchCount">0</span> 个主体。
+            </div>
+          </div>
+
+          <!-- 2️⃣ 选择项目标签 -->
+          <div class="tag-section slide-up" style="animation-delay: 0.1s;">
+            <div class="tag-section-header">
+              <div class="tag-section-title">
+                <span>2️⃣</span>
+                <span>选择项目标签</span>
+                <span style="color: var(--error); font-size: 14px;">*</span>
+              </div>
+              <div class="tag-section-badge" id="projectBadge">已选 0 个标签</div>
+            </div>
+
+            <div class="tag-category-title">🏷️ 按题材分类</div>
+
+            <div class="tag-grid">
+              <div class="tag-button" data-tag-id="project_badao" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">👔</div>
+                <div class="tag-button-name">霸道总裁</div>
+                <div class="tag-button-count">356个项目</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_chuanyue" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🚪</div>
+                <div class="tag-button-name">穿越重生</div>
+                <div class="tag-button-count">289个项目</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_dushi" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🏙️</div>
+                <div class="tag-button-name">都市言情</div>
+                <div class="tag-button-count">421个项目</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_gudai" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🏮</div>
+                <div class="tag-button-name">古代言情</div>
+                <div class="tag-button-count">198个项目</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_xuanhuan" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">⚔️</div>
+                <div class="tag-button-name">玄幻修仙</div>
+                <div class="tag-button-count">167个项目</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_xuanyi" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🔍</div>
+                <div class="tag-button-name">悬疑推理</div>
+                <div class="tag-button-count">89个项目</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_other" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">📚</div>
+                <div class="tag-button-name">其他题材</div>
+                <div class="tag-button-count">124个项目</div>
+              </div>
+            </div>
+
+            <div class="tag-category-title" style="margin-top: var(--space-4);">🏷️ 按效果分类</div>
+
+            <div class="tag-grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="tag-button" data-tag-id="project_high_conversion" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">📈</div>
+                <div class="tag-button-name">高转化项目</div>
+                <div class="tag-button-count">125个</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_new" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🆕</div>
+                <div class="tag-button-name">新上线项目</div>
+                <div class="tag-button-count">89个</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_hot" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🔥</div>
+                <div class="tag-button-name">热门项目</div>
+                <div class="tag-button-count">156个</div>
+              </div>
+
+              <div class="tag-button" data-tag-id="project_test" onclick="toggleButtonTag(this, 'project')">
+                <div class="tag-button-icon">🧪</div>
+                <div class="tag-button-name">测试项目</div>
+                <div class="tag-button-count">67个</div>
+              </div>
+            </div>
+
+            <div class="create-tag-btn" style="margin-top: var(--space-3);" onclick="createNewTag('project')">
+              + 创建新的项目标签
+            </div>
+
+            <div class="info-tip">
+              💡 <strong>提示：</strong>已选择 <span id="projectCount">0</span> 个项目标签，匹配 <span id="projectMatchCount">0</span> 个项目。
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：实时预览 -->
+        <div class="tag-right">
+          <div class="preview-panel">
+            <div class="preview-section">
+              <div class="preview-title">
+                <span>📊</span>
+                <span>标签匹配预览</span>
+              </div>
+
+              <!-- 主体标签 -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: var(--space-2);">
+                  主体标签: <span id="previewSubjectTagCount">0</span> 个
+                </div>
+                <div class="preview-tag-list" id="previewSubjectTags">
+                  <div style="font-size: 13px; color: var(--secondary);">暂无选择</div>
+                </div>
+                <div class="preview-total">
+                  <div class="preview-total-label">匹配主体</div>
+                  <div class="preview-total-value" id="previewSubjectTotal">0</div>
+                  <div class="preview-total-unit">个</div>
+                </div>
+              </div>
+
+              <!-- 项目标签 -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: var(--space-2);">
+                  项目标签: <span id="previewProjectTagCount">0</span> 个
+                </div>
+                <div class="preview-tag-list" id="previewProjectTags">
+                  <div style="font-size: 13px; color: var(--secondary);">暂无选择</div>
+                </div>
+                <div class="preview-total">
+                  <div class="preview-total-label">匹配项目</div>
+                  <div class="preview-total-value" id="previewProjectTotal">0</div>
+                  <div class="preview-total-unit">个</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-title">
+                <span>💡</span>
+                <span>生成预估</span>
+              </div>
+
+              <div class="estimate-box">
+                <div class="estimate-label">根据当前标签</div>
+                <div class="estimate-value" id="estimatedCount">0</div>
+                <div class="estimate-unit">条广告计划</div>
+              </div>
+
+              <div style="margin-top: var(--space-3); font-size: 12px; color: var(--secondary); text-align: center;">
+                ⚠️ 需继续选择素材和小说标签
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作栏 -->
+      <div class="action-bar">
+        <button class="btn btn-default" onclick="goBack()">← 取消</button>
+        <button class="btn btn-primary" id="nextBtn" disabled onclick="nextStep()">
+          下一步：继续选择标签 →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 标签数据
+    const tagData = {
+      subject_running: { name: '跑量主体', count: 30 },
+      subject_high_conversion: { name: '高转化主体', count: 15 },
+      subject_new: { name: '新主体', count: 8 },
+      subject_beijing_vip: { name: '北京地区VIP客户', count: 5 },
+      project_badao: { name: '霸道总裁', count: 356 },
+      project_chuanyue: { name: '穿越重生', count: 289 },
+      project_dushi: { name: '都市言情', count: 421 },
+      project_gudai: { name: '古代言情', count: 198 },
+      project_xuanhuan: { name: '玄幻修仙', count: 167 },
+      project_xuanyi: { name: '悬疑推理', count: 89 },
+      project_other: { name: '其他题材', count: 124 },
+      project_high_conversion: { name: '高转化项目', count: 125 },
+      project_new: { name: '新上线项目', count: 89 },
+      project_hot: { name: '热门项目', count: 156 },
+      project_test: { name: '测试项目', count: 67 }
+    };
+
+    // 选中的标签
+    const selectedTags = {
+      subject: [],
+      project: []
+    };
+
+    // 切换标签（详细卡片）
+    function toggleTag(element, type) {
+      const tagId = element.getAttribute('data-tag-id');
+      const checkbox = element.querySelector('.tag-card-checkbox');
+
+      if (element.classList.contains('selected')) {
+        element.classList.remove('selected');
+        checkbox.checked = false;
+        selectedTags[type] = selectedTags[type].filter(id => id !== tagId);
+      } else {
+        element.classList.add('selected');
+        checkbox.checked = true;
+        selectedTags[type].push(tagId);
+      }
+
+      updatePreview();
+      validateForm();
+    }
+
+    // 切换标签（按钮式）
+    function toggleButtonTag(element, type) {
+      const tagId = element.getAttribute('data-tag-id');
+
+      if (element.classList.contains('selected')) {
+        element.classList.remove('selected');
+        selectedTags[type] = selectedTags[type].filter(id => id !== tagId);
+      } else {
+        element.classList.add('selected');
+        selectedTags[type].push(tagId);
+      }
+
+      updatePreview();
+      validateForm();
+    }
+
+    // 更新预览
+    function updatePreview() {
+      // 更新主体标签
+      const subjectTagCount = selectedTags.subject.length;
+      let subjectTotalCount = 0;
+
+      document.getElementById('subjectBadge').textContent = `已选 ${subjectTagCount} 个标签`;
+      document.getElementById('subjectCount').textContent = subjectTagCount;
+      document.getElementById('previewSubjectTagCount').textContent = subjectTagCount;
+
+      if (subjectTagCount > 0) {
+        let html = '';
+        selectedTags.subject.forEach(tagId => {
+          const tag = tagData[tagId];
+          subjectTotalCount += tag.count;
+          html += `
+            <div class="preview-tag-item">
+              <div class="preview-tag-name">├─ ${tag.name}</div>
+              <div class="preview-tag-count">${tag.count}个主体</div>
+            </div>
+          `;
+        });
+        document.getElementById('previewSubjectTags').innerHTML = html;
+      } else {
+        document.getElementById('previewSubjectTags').innerHTML = '<div style="font-size: 13px; color: var(--secondary);">暂无选择</div>';
+      }
+
+      // 去重后的主体数量（简化计算）
+      const uniqueSubjectCount = subjectTagCount > 0 ? Math.floor(subjectTotalCount * 0.8) : 0;
+      document.getElementById('subjectMatchCount').textContent = uniqueSubjectCount;
+      document.getElementById('previewSubjectTotal').textContent = uniqueSubjectCount;
+
+      // 更新项目标签
+      const projectTagCount = selectedTags.project.length;
+      let projectTotalCount = 0;
+
+      document.getElementById('projectBadge').textContent = `已选 ${projectTagCount} 个标签`;
+      document.getElementById('projectCount').textContent = projectTagCount;
+      document.getElementById('previewProjectTagCount').textContent = projectTagCount;
+
+      if (projectTagCount > 0) {
+        let html = '';
+        selectedTags.project.forEach(tagId => {
+          const tag = tagData[tagId];
+          projectTotalCount += tag.count;
+          html += `
+            <div class="preview-tag-item">
+              <div class="preview-tag-name">├─ ${tag.name}</div>
+              <div class="preview-tag-count">${tag.count}个项目</div>
+            </div>
+          `;
+        });
+        document.getElementById('previewProjectTags').innerHTML = html;
+      } else {
+        document.getElementById('previewProjectTags').innerHTML = '<div style="font-size: 13px; color: var(--secondary);">暂无选择</div>';
+      }
+
+      const uniqueProjectCount = projectTagCount > 0 ? Math.floor(projectTotalCount * 0.8) : 0;
+      document.getElementById('projectMatchCount').textContent = uniqueProjectCount;
+      document.getElementById('previewProjectTotal').textContent = uniqueProjectCount;
+
+      // 更新预估数量（简化）
+      const estimatedCount = uniqueSubjectCount && uniqueProjectCount ? uniqueSubjectCount * 5 : 0;
+      document.getElementById('estimatedCount').textContent = estimatedCount;
+    }
+
+    // 表单验证
+    function validateForm() {
+      const isValid = selectedTags.subject.length > 0 && selectedTags.project.length > 0;
+      document.getElementById('nextBtn').disabled = !isValid;
+    }
+
+    // 返回
+    function goBack() {
+      window.location.href = 'create-new.html';
+    }
+
+    // 保存草稿
+    function saveAsDraft() {
+      DataStore.save('selectedTags_step1', selectedTags);
+      Message.success('草稿已保存');
+    }
+
+    // 下一步
+    function nextStep() {
+      if (selectedTags.subject.length === 0 || selectedTags.project.length === 0) {
+        Message.error('请至少选择一个主体标签和一个项目标签');
+        return;
+      }
+
+      DataStore.save('selectedTags_step1', selectedTags);
+      Message.success('标签已保存，进入下一步...');
+
+      setTimeout(() => {
+        window.location.href = 'tag-selection-step2.html';
+      }, 500);
+    }
+
+    // 创建新标签
+    function createNewTag(type) {
+      Message.info(`创建${type === 'subject' ? '主体' : '项目'}标签功能开发中...`);
+    }
+
+    // 页面加载时恢复草稿
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTags = DataStore.load('selectedTags_step1');
+      if (savedTags) {
+        selectedTags.subject = savedTags.subject || [];
+        selectedTags.project = savedTags.project || [];
+
+        // 恢复选中状态
+        selectedTags.subject.forEach(tagId => {
+          const element = document.querySelector(`[data-tag-id="${tagId}"]`);
+          if (element) {
+            element.classList.add('selected');
+            const checkbox = element.querySelector('.tag-card-checkbox');
+            if (checkbox) checkbox.checked = true;
+          }
+        });
+
+        selectedTags.project.forEach(tagId => {
+          const element = document.querySelector(`[data-tag-id="${tagId}"]`);
+          if (element) {
+            element.classList.add('selected');
+          }
+        });
+
+        updatePreview();
+        validateForm();
+      }
+    });
+  </script>
+</body>
+</html>

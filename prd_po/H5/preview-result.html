@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预览生成结果 - 广告批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .preview-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .summary-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .summary-card {
+      text-align: center;
+      padding: 16px;
+      background: var(--gray-1);
+      border-radius: var(--radius-md);
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-6);
+    }
+
+    .result-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--heading);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .result-table th {
+      background: var(--gray-1);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--heading);
+      border-bottom: 2px solid var(--gray-3);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .result-table th input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .result-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-2);
+    }
+
+    .result-table tbody tr:hover {
+      background: var(--primary-1);
+    }
+
+    .ad-name {
+      color: var(--primary-6);
+      font-weight: 500;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .tag-decompress {
+      background: var(--success-1);
+      color: var(--success-7);
+    }
+
+    .tag-scroll {
+      background: var(--warning-1);
+      color: var(--warning-7);
+    }
+
+    .tag-adx {
+      background: var(--purple-1);
+      color: var(--purple-7);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--gray-2);
+    }
+
+    .batch-actions {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: var(--gray-1);
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+    }
+
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-2);
+    }
+
+    .detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-modal.active {
+      display: flex;
+    }
+
+    .detail-content {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gray-2);
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--gray-2);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: var(--secondary);
+      font-size: 14px;
+    }
+
+    .detail-value {
+      font-weight: 500;
+      color: var(--heading);
+    }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--gray-3);
+      border-top-color: var(--primary-6);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">预览生成结果</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回</button>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="preview-container fade-in">
+      <!-- 生成摘要 -->
+      <div class="summary-section">
+        <h2 class="section-title">📊 生成摘要</h2>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">预计生成</div>
+            <div class="summary-value" id="totalCount">0</div>
+            <div class="summary-label">条广告计划</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">涉及主体</div>
+            <div class="summary-value" id="subjectCount">0</div>
+            <div class="summary-label">个</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">涉及账户</div>
+            <div class="summary-value" id="accountCount">0</div>
+            <div class="summary-label">个</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">涉及项目</div>
+            <div class="summary-value" id="projectCount">0</div>
+            <div class="summary-label">个</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">使用素材</div>
+            <div class="summary-value" id="materialCount">0</div>
+            <div class="summary-label">个</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 结果列表 -->
+      <div class="result-section">
+        <div class="section-header">
+          <h2 class="section-title">📋 广告计划列表</h2>
+          <div class="flex gap-2">
+            <button class="btn btn-default btn-small" onclick="exportExcel()">📊 导出Excel</button>
+            <button class="btn btn-default btn-small" onclick="refreshResults()">🔄 刷新</button>
+          </div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <div class="filter-bar">
+            <select id="filterSubject" class="input" onchange="filterResults()">
+              <option value="">全部主体</option>
+            </select>
+            <select id="filterMaterialType" class="input" onchange="filterResults()">
+              <option value="">全部素材类型</option>
+              <option value="decompress">解压</option>
+              <option value="scroll">滚屏</option>
+              <option value="adx">ADX</option>
+            </select>
+            <input type="text" id="searchInput" class="input" placeholder="搜索计划名称..." onkeyup="debounceSearch()">
+          </div>
+        </div>
+
+        <!-- 批量操作 -->
+        <div class="batch-actions" id="batchActions" style="display: none;">
+          <span>已选择 <strong id="selectedCount">0</strong> 条</span>
+          <button class="btn btn-default btn-small" onclick="deleteSelected()">删除选中</button>
+          <button class="btn btn-default btn-small" onclick="modifySelected()">修改配置</button>
+          <button class="btn btn-default btn-small" onclick="clearSelection()">取消选择</button>
+        </div>
+
+        <!-- 表格 -->
+        <div style="overflow-x: auto;">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;">
+                  <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                </th>
+                <th>主体</th>
+                <th>账户</th>
+                <th>项目</th>
+                <th>小说</th>
+                <th>素材类型</th>
+                <th>广告计划名称</th>
+                <th style="width: 100px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="resultTableBody">
+              <!-- 数据将动态填充 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination">
+          <div class="text-secondary">
+            显示 <span id="rangeStart">1</span>-<span id="rangeEnd">20</span>，共 <span id="totalRecords">0</span> 条
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-default btn-small" id="prevPage" onclick="changePage(-1)">上一页</button>
+            <button class="btn btn-default btn-small" id="nextPage" onclick="changePage(1)">下一页</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="action-bar">
+        <button class="btn btn-default" onclick="goBack()">← 上一步</button>
+        <div class="flex gap-3">
+          <button class="btn btn-default" onclick="saveAsDraft()">💾 保存草稿</button>
+          <button class="btn btn-primary" onclick="submitCreation()">✅ 提交创建</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div class="detail-modal" id="detailModal">
+    <div class="detail-content">
+      <div class="detail-header">
+        <h3>广告计划详情</h3>
+        <button class="btn btn-text" onclick="closeDetail()">✕</button>
+      </div>
+
+      <div class="detail-section">
+        <h4>📋 基础信息</h4>
+        <div class="detail-row">
+          <span class="detail-label">主体</span>
+          <span class="detail-value" id="detailSubject"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">账户</span>
+          <span class="detail-value" id="detailAccount"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">项目</span>
+          <span class="detail-value" id="detailProject"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">小说</span>
+          <span class="detail-value" id="detailBook"></span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>🎨 创意信息</h4>
+        <div class="detail-row">
+          <span class="detail-label">素材类型</span>
+          <span class="detail-value" id="detailMaterialType"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">素材来源</span>
+          <span class="detail-value" id="detailMaterialSource"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">计划名称</span>
+          <span class="detail-value" id="detailName"></span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>⚙️ 投放配置</h4>
+        <div class="detail-row">
+          <span class="detail-label">日预算</span>
+          <span class="detail-value" id="detailBudget"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">出价</span>
+          <span class="detail-value" id="detailBidding"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">投放时段</span>
+          <span class="detail-value" id="detailSchedule"></span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+        <button class="btn btn-default" onclick="closeDetail()">关闭</button>
+        <button class="btn btn-danger" onclick="deleteItem()">删除</button>
+        <button class="btn btn-primary" onclick="editItem()">编辑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加载遮罩 -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p style="margin-top: 20px; color: var(--secondary);">正在生成广告计划...</p>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/generation-engine.js"></script>
+  <script>
+    let engine = new GenerationEngine();
+    let allResults = [];
+    let filteredResults = [];
+    let selectedItems = new Set();
+    let currentPage = 1;
+    let pageSize = 20;
+    let currentDetailItem = null;
+
+    // 初始化
+    function init() {
+      // 显示加载遮罩
+      document.getElementById('loadingOverlay').classList.add('active');
+
+      setTimeout(() => {
+        // 加载数据
+        const selectedDimensions = DataStore.load('selectedDimensions', {});
+        const generationRules = DataStore.load('generationRules', null);
+
+        if (!generationRules) {
+          Message.error('未找到生成规则配置');
+          document.getElementById('loadingOverlay').classList.remove('active');
+          return;
+        }
+
+        // 设置引擎
+        engine.setSelectedData(selectedDimensions);
+        engine.setRules(generationRules);
+
+        // 生成结果
+        allResults = engine.generate();
+        filteredResults = [...allResults];
+
+        // 更新UI
+        updateSummary(selectedDimensions);
+        updateSubjectFilter(selectedDimensions.subjects);
+        renderTable();
+
+        document.getElementById('loadingOverlay').classList.remove('active');
+        Message.success(`成功生成 ${allResults.length} 条广告计划`);
+      }, 1000);
+    }
+
+    // 更新摘要
+    function updateSummary(dimensions) {
+      const stats = engine.getStatistics();
+
+      document.getElementById('totalCount').textContent = allResults.length;
+      document.getElementById('subjectCount').textContent = stats.subjectCount;
+      document.getElementById('accountCount').textContent = stats.filteredAccountCount || stats.accountCount;
+      document.getElementById('projectCount').textContent = stats.projectCount;
+      document.getElementById('materialCount').textContent = stats.materialCount;
+    }
+
+    // 更新主体筛选器
+    function updateSubjectFilter(subjects) {
+      const filterSubject = document.getElementById('filterSubject');
+      subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject.id;
+        option.textContent = subject.name;
+        filterSubject.appendChild(option);
+      });
+    }
+
+    // 渲染表格
+    function renderTable() {
+      const tbody = document.getElementById('resultTableBody');
+      tbody.innerHTML = '';
+
+      const start = (currentPage - 1) * pageSize;
+      const end = Math.min(start + pageSize, filteredResults.length);
+      const pageResults = filteredResults.slice(start, end);
+
+      if (pageResults.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: var(--secondary);">
+              暂无数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      pageResults.forEach(item => {
+        const row = document.createElement('tr');
+        const isSelected = selectedItems.has(item.id);
+
+        row.innerHTML = `
+          <td>
+            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect('${item.id}')">
+          </td>
+          <td>${item.subjectName}</td>
+          <td>${item.accountName}</td>
+          <td>${item.projectName}</td>
+          <td>${item.bookName}</td>
+          <td>
+            <span class="tag tag-${item.materialType}">
+              ${getTypeName(item.materialType)}
+            </span>
+          </td>
+          <td class="ad-name">${item.name}</td>
+          <td>
+            <button class="btn btn-text btn-small" onclick="viewDetail('${item.id}')">查看</button>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+
+      // 更新分页信息
+      document.getElementById('rangeStart').textContent = start + 1;
+      document.getElementById('rangeEnd').textContent = end;
+      document.getElementById('totalRecords').textContent = filteredResults.length;
+
+      document.getElementById('prevPage').disabled = currentPage === 1;
+      document.getElementById('nextPage').disabled = end >= filteredResults.length;
+    }
+
+    // 获取类型名称
+    function getTypeName(type) {
+      const typeMap = {
+        decompress: '解压',
+        scroll: '滚屏',
+        adx: 'ADX'
+      };
+      return typeMap[type] || type;
+    }
+
+    // 筛选结果
+    function filterResults() {
+      const subjectFilter = document.getElementById('filterSubject').value;
+      const materialTypeFilter = document.getElementById('filterMaterialType').value;
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+
+      filteredResults = allResults.filter(item => {
+        if (subjectFilter && item.subjectId !== subjectFilter) return false;
+        if (materialTypeFilter && item.materialType !== materialTypeFilter) return false;
+        if (searchText && !item.name.toLowerCase().includes(searchText)) return false;
+        return true;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    // 防抖搜索
+    let searchTimer;
+    function debounceSearch() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(filterResults, 300);
+    }
+
+    // 切换全选
+    function toggleSelectAll() {
+      const checked = document.getElementById('selectAll').checked;
+      const start = (currentPage - 1) * pageSize;
+      const end = Math.min(start + pageSize, filteredResults.length);
+      const pageResults = filteredResults.slice(start, end);
+
+      pageResults.forEach(item => {
+        if (checked) {
+          selectedItems.add(item.id);
+        } else {
+          selectedItems.delete(item.id);
+        }
+      });
+
+      renderTable();
+      updateBatchActions();
+    }
+
+    // 切换选择
+    function toggleSelect(id) {
+      if (selectedItems.has(id)) {
+        selectedItems.delete(id);
+      } else {
+        selectedItems.add(id);
+      }
+      updateBatchActions();
+    }
+
+    // 更新批量操作栏
+    function updateBatchActions() {
+      const count = selectedItems.size;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('batchActions').style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    // 清除选择
+    function clearSelection() {
+      selectedItems.clear();
+      document.getElementById('selectAll').checked = false;
+      renderTable();
+      updateBatchActions();
+    }
+
+    // 删除选中
+    function deleteSelected() {
+      if (selectedItems.size === 0) return;
+
+      if (confirm(`确定要删除选中的 ${selectedItems.size} 条广告计划吗？`)) {
+        allResults = allResults.filter(item => !selectedItems.has(item.id));
+        filteredResults = filteredResults.filter(item => !selectedItems.has(item.id));
+        selectedItems.clear();
+        renderTable();
+        updateBatchActions();
+        Message.success('删除成功');
+      }
+    }
+
+    // 修改选中
+    function modifySelected() {
+      Message.info('批量修改功能开发中...');
+    }
+
+    // 查看详情
+    function viewDetail(id) {
+      currentDetailItem = allResults.find(item => item.id === id);
+      if (!currentDetailItem) return;
+
+      document.getElementById('detailSubject').textContent = currentDetailItem.subjectName;
+      document.getElementById('detailAccount').textContent = currentDetailItem.accountName;
+      document.getElementById('detailProject').textContent = currentDetailItem.projectName;
+      document.getElementById('detailBook').textContent = currentDetailItem.bookName;
+      document.getElementById('detailMaterialType').textContent = getTypeName(currentDetailItem.materialType);
+      document.getElementById('detailMaterialSource').textContent = currentDetailItem.materialSource || '-';
+      document.getElementById('detailName').textContent = currentDetailItem.name;
+      document.getElementById('detailBudget').textContent = currentDetailItem.budget + '元/天';
+      document.getElementById('detailBidding').textContent = 'oCPM ' + currentDetailItem.bidding + '元';
+      document.getElementById('detailSchedule').textContent = currentDetailItem.schedule === 'allday' ? '全天' : currentDetailItem.schedule;
+
+      document.getElementById('detailModal').classList.add('active');
+    }
+
+    // 关闭详情
+    function closeDetail() {
+      document.getElementById('detailModal').classList.remove('active');
+      currentDetailItem = null;
+    }
+
+    // 删除单条
+    function deleteItem() {
+      if (!currentDetailItem) return;
+
+      if (confirm('确定要删除这条广告计划吗？')) {
+        allResults = allResults.filter(item => item.id !== currentDetailItem.id);
+        filteredResults = filteredResults.filter(item => item.id !== currentDetailItem.id);
+        renderTable();
+        closeDetail();
+        Message.success('删除成功');
+      }
+    }
+
+    // 编辑单条
+    function editItem() {
+      Message.info('编辑功能开发中...');
+    }
+
+    // 翻页
+    function changePage(delta) {
+      const totalPages = Math.ceil(filteredResults.length / pageSize);
+      const newPage = currentPage + delta;
+
+      if (newPage < 1 || newPage > totalPages) return;
+
+      currentPage = newPage;
+      renderTable();
+      window.scrollTo(0, 0);
+    }
+
+    // 导出Excel
+    function exportExcel() {
+      Message.success('正在导出Excel...');
+      // 实际项目中这里会调用导出API
+      setTimeout(() => {
+        Message.success('导出成功');
+      }, 1000);
+    }
+
+    // 刷新结果
+    function refreshResults() {
+      init();
+    }
+
+    // 返回上一步
+    function goBack() {
+      window.location.href = 'rule-config.html';
+    }
+
+    // 保存草稿
+    function saveAsDraft() {
+      const taskId = DataStore.load('currentTaskId');
+      if (!taskId) {
+        Message.error('未找到任务ID');
+        return;
+      }
+
+      // 保存到localStorage（实际项目中应该保存到数据库）
+      const draftData = {
+        id: taskId,
+        name: '草稿-' + new Date().toLocaleString(),
+        results: allResults,
+        status: 'draft'
+      };
+
+      DataStore.save('draft_' + taskId, draftData);
+      Message.success('草稿已保存');
+    }
+
+    // 提交创建
+    function submitCreation() {
+      if (allResults.length === 0) {
+        Message.error('没有可创建的广告计划');
+        return;
+      }
+
+      if (confirm(`确定要创建 ${allResults.length} 条广告计划吗？`)) {
+        document.getElementById('loadingOverlay').classList.add('active');
+
+        // 模拟提交过程
+        setTimeout(() => {
+          const taskId = DataStore.load('currentTaskId') || generateTaskId();
+
+          // 保存任务数据
+          const taskData = {
+            id: taskId,
+            name: '批量创编-' + new Date().toLocaleString(),
+            planCount: allResults.length,
+            creator: '当前用户',
+            createTime: new Date().toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            }).replace(/\//g, '-'),
+            status: 'pending',
+            actualCount: 0,
+            successCount: 0,
+            failedCount: 0,
+            progress: 0,
+            results: allResults,
+            config: {
+              dimensions: DataStore.load('selectedDimensions'),
+              rules: DataStore.load('generationRules')
+            }
+          };
+
+          // 保存到localStorage（实际项目中应该提交到服务器）
+          DataStore.save('task_' + taskId, taskData);
+
+          document.getElementById('loadingOverlay').classList.remove('active');
+          Message.success('提交成功！正在跳转到列表页...');
+
+          setTimeout(() => {
+            // 清除临时数据
+            localStorage.removeItem('currentTaskId');
+            localStorage.removeItem('selectedDimensions');
+            localStorage.removeItem('generationRules');
+
+            window.location.href = 'index.html';
+          }, 1500);
+        }, 2000);
+      }
+    }
+
+    // 生成任务ID
+    function generateTaskId() {
+      const timestamp = Date.now().toString();
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return '100' + timestamp.slice(-3) + random;
+    }
+
+    // 页面加载完成
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

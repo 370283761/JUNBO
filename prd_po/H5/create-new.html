@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新建创编 - 选择创建方式</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .home-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    .home-title {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .home-subtitle {
+      text-align: center;
+      color: var(--secondary);
+      margin-bottom: 48px;
+    }
+
+    .creation-methods {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+
+    .method-card {
+      background: var(--white);
+      border: 2px solid var(--gray-3);
+      border-radius: var(--radius-xl);
+      padding: 40px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .method-card:hover {
+      border-color: var(--primary-6);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+    }
+
+    .method-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .method-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 12px;
+    }
+
+    .method-desc {
+      color: var(--secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      min-height: 48px;
+    }
+
+    .recent-templates {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+
+    .recent-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .template-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border: 1px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-base);
+    }
+
+    .template-item:hover {
+      border-color: var(--primary-6);
+      background: var(--primary-1);
+    }
+
+    .template-info {
+      flex: 1;
+    }
+
+    .template-name {
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 4px;
+    }
+
+    .template-meta {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">新建创编</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回列表</button>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="home-container fade-in">
+      <h1 class="home-title">选择创建方式</h1>
+      <p class="home-subtitle">选择一种创建方式，开始批量创建广告</p>
+
+      <!-- 创建方式选择 -->
+      <div class="creation-methods">
+        <!-- 优化师视角 - 推荐 -->
+        <div class="method-card" onclick="selectMethod('optimizer')" style="border-color: var(--primary-6); background: var(--primary-1);">
+          <div class="method-icon">🎯</div>
+          <h3 class="method-title">优化师视角创建</h3>
+          <p class="method-desc">选择维度+配置规则，智能批量生成广告计划</p>
+          <button class="btn btn-primary">选择（推荐）</button>
+        </div>
+
+        <!-- 从模板创建 -->
+        <div class="method-card" onclick="selectMethod('template')">
+          <div class="method-icon">📋</div>
+          <h3 class="method-title">从模板创建</h3>
+          <p class="method-desc">使用预设模板快速创建，适合常规投放场景</p>
+          <button class="btn btn-primary">选择</button>
+        </div>
+
+        <!-- 复制现有广告 -->
+        <div class="method-card" onclick="selectMethod('copy')">
+          <div class="method-icon">📑</div>
+          <h3 class="method-title">复制现有广告</h3>
+          <p class="method-desc">基于已有优质广告复制创建，保留优化数据</p>
+          <button class="btn btn-primary">选择</button>
+        </div>
+
+        <!-- Excel导入 -->
+        <div class="method-card" onclick="selectMethod('excel')">
+          <div class="method-icon">📊</div>
+          <h3 class="method-title">Excel导入</h3>
+          <p class="method-desc">批量导入Excel文件创建，适合大批量投放</p>
+          <button class="btn btn-primary">选择</button>
+        </div>
+      </div>
+
+      <!-- 常用模板 -->
+      <div class="recent-templates slide-up">
+        <h2 class="recent-title">
+          <span>⚡</span>
+          <span>常用模板</span>
+        </h2>
+        <div class="template-list">
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-name">效果广告-电商模板</div>
+              <div class="template-meta">使用 32 次 · 适合电商产品推广</div>
+            </div>
+            <button class="btn btn-primary btn-small" onclick="useTemplate('ecommerce')">使用模板</button>
+          </div>
+
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-name">品牌广告-APP下载</div>
+              <div class="template-meta">使用 18 次 · 适合APP拉新推广</div>
+            </div>
+            <button class="btn btn-primary btn-small" onclick="useTemplate('app-download')">使用模板</button>
+          </div>
+
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-name">本地服务-多城市投放</div>
+              <div class="template-meta">使用 15 次 · 适合区域性服务</div>
+            </div>
+            <button class="btn btn-primary btn-small" onclick="useTemplate('local-service')">使用模板</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 返回列表
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
+    // 选择创建方式
+    function selectMethod(method) {
+      DataStore.save('creationMethod', method);
+      // 生成新的创编ID
+      const taskId = generateTaskId();
+      DataStore.save('currentTaskId', taskId);
+      Message.success('已选择创建方式');
+
+      // 根据不同方式跳转到不同页面
+      setTimeout(() => {
+        if (method === 'optimizer') {
+          window.location.href = 'data-selection.html';
+        } else {
+          window.location.href = 'config-campaign.html';
+        }
+      }, 500);
+    }
+
+    // 使用模板快速创建
+    function useTemplate(templateId) {
+      DataStore.save('creationMethod', 'template');
+      DataStore.save('templateId', templateId);
+      // 生成新的创编ID
+      const taskId = generateTaskId();
+      DataStore.save('currentTaskId', taskId);
+      Message.success('正在加载模板...');
+
+      setTimeout(() => {
+        window.location.href = 'config-campaign.html';
+      }, 500);
+    }
+
+    // 生成9位创编ID
+    function generateTaskId() {
+      const timestamp = Date.now().toString();
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return '100' + timestamp.slice(-3) + random;
+    }
+  </script>
+</body>
+</html>

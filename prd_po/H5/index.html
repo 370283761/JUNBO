@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>批量创编管理 - 广告投放平台</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .top-bar {
+      background: var(--white);
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--gray-3);
+    }
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .stat-card {
+      background: var(--white);
+      padding: var(--space-5);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-3);
+    }
+
+    .stat-label {
+      color: var(--secondary);
+      font-size: 12px;
+      margin-bottom: var(--space-2);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--heading);
+    }
+
+    .stat-trend {
+      font-size: 12px;
+      margin-top: var(--space-2);
+    }
+
+    .stat-trend.up {
+      color: var(--success);
+    }
+
+    .stat-trend.down {
+      color: var(--error);
+    }
+
+    .filter-bar {
+      background: var(--white);
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-4);
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .list-container {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .list-header {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--gray-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-draft {
+      background: var(--gray-2);
+      color: var(--secondary);
+    }
+
+    .status-pending {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .status-running {
+      background: var(--info-bg);
+      color: var(--info);
+    }
+
+    .status-success {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .status-partial {
+      background: #FFF7E6;
+      color: #FA8C16;
+    }
+
+    .status-failed {
+      background: var(--error-bg);
+      color: var(--error);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: var(--space-4);
+      opacity: 0.3;
+    }
+
+    .empty-text {
+      color: var(--secondary);
+      margin-bottom: var(--space-6);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .id-text {
+      font-family: 'Monaco', 'Consolas', monospace;
+      color: var(--primary-6);
+      font-weight: 500;
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 顶部栏 -->
+    <div class="top-bar">
+      <div>
+        <h1 style="margin-bottom: 4px;">批量创编管理</h1>
+        <p style="color: var(--secondary); font-size: 14px;">管理和跟踪所有批量创编任务</p>
+      </div>
+      <div class="flex gap-3">
+        <button class="btn btn-default">
+          📊 数据报表
+        </button>
+        <button class="btn btn-default">
+          ⚙️ 模板管理
+        </button>
+        <button class="btn btn-primary btn-large" onclick="createNew()">
+          ➕ 新建创编
+        </button>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="page-content fade-in">
+      <!-- 统计卡片 -->
+      <div class="stats-cards">
+        <div class="stat-card">
+          <div class="stat-label">总创编任务</div>
+          <div class="stat-value" id="totalTasks">12</div>
+          <div class="stat-trend up">↑ 较上周 +3</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">执行中任务</div>
+          <div class="stat-value" id="runningTasks">2</div>
+          <div class="stat-trend">实时更新</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">今日完成</div>
+          <div class="stat-value" id="todayComplete">5</div>
+          <div class="stat-trend up">↑ 成功率 95%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">累计生成广告</div>
+          <div class="stat-value" id="totalAds">3,486</div>
+          <div class="stat-trend up">↑ +328</div>
+        </div>
+      </div>
+
+      <!-- 筛选栏 -->
+      <div class="filter-bar">
+        <div class="filter-item">
+          <label>状态：</label>
+          <select id="statusFilter" class="input" style="width: 150px;" onchange="filterList()">
+            <option value="">全部状态</option>
+            <option value="draft">草稿</option>
+            <option value="pending">待执行</option>
+            <option value="running">执行中</option>
+            <option value="success">已完成</option>
+            <option value="partial">部分成功</option>
+            <option value="failed">失败</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label>创建时间：</label>
+          <select class="input" style="width: 150px;">
+            <option>全部时间</option>
+            <option>今天</option>
+            <option>最近7天</option>
+            <option>最近30天</option>
+          </select>
+        </div>
+
+        <div class="filter-item" style="flex: 1;">
+          <input
+            type="text"
+            id="searchInput"
+            class="input"
+            placeholder="搜索创编ID、任务名称..."
+            oninput="debounce(filterList, 300)()"
+            style="width: 100%; max-width: 400px;"
+          >
+        </div>
+
+        <button class="btn btn-text" onclick="resetFilters()">
+          重置筛选
+        </button>
+      </div>
+
+      <!-- 列表容器 -->
+      <div class="list-container">
+        <div class="list-header">
+          <div>
+            <span>共 </span>
+            <strong id="listCount">12</strong>
+            <span> 条记录</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-text btn-small">导出列表</button>
+            <button class="btn btn-text btn-small" onclick="refreshList()">🔄 刷新</button>
+          </div>
+        </div>
+
+        <!-- 表格 -->
+        <div class="table-wrapper">
+          <table class="table" id="taskTable">
+            <thead>
+              <tr>
+                <th style="width: 100px;">创编ID</th>
+                <th style="width: 250px;">任务名称</th>
+                <th style="width: 100px;">预计计划数</th>
+                <th style="width: 150px;">创建人员</th>
+                <th style="width: 160px;">创建时间</th>
+                <th style="width: 120px;">执行状态</th>
+                <th style="width: 200px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody">
+              <!-- 数据将通过JavaScript动态填充 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分页 -->
+        <div style="padding: var(--space-4); border-top: 1px solid var(--gray-3); display: flex; justify-content: space-between; align-items: center;">
+          <div style="color: var(--secondary); font-size: 14px;">
+            显示 <span id="pageStart">1</span> - <span id="pageEnd">10</span>，共 <span id="pageTotal">12</span> 条
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-default btn-small" onclick="previousPage()" id="prevBtn">上一页</button>
+            <button class="btn btn-default btn-small" onclick="nextPage()" id="nextBtn">下一页</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div id="detailModal" class="modal-mask">
+    <div class="modal" style="max-width: 800px;">
+      <div class="modal-header">
+        <span>创编任务详情</span>
+        <button class="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="detailContent">
+        <!-- 详情内容将动态填充 -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="hideDetail()">关闭</button>
+        <button class="btn btn-primary" onclick="copyTask(currentTaskId)">复制创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div id="deleteModal" class="modal-mask">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <span>确认删除</span>
+        <button class="modal-close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <span>⚠️</span>
+          <span>删除后将无法恢复，确定要删除这个创编任务吗？</span>
+        </div>
+        <p style="margin-top: 16px; color: var(--secondary);">
+          任务ID: <span class="id-text" id="deleteTaskId"></span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="hideDelete()">取消</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    let detailModal, deleteModal;
+    let currentTaskId = null;
+    let taskToDelete = null;
+    let currentPage = 1;
+    let pageSize = 10;
+    let allTasks = [];
+
+    // 模拟数据
+    const mockTasks = [
+      {
+        id: '100234567',
+        name: '北京地区-手机产品推广-春季促销',
+        planCount: 24,
+        creator: '张三',
+        createTime: '2026-01-15 14:30:25',
+        status: 'success',
+        actualCount: 24,
+        successCount: 24,
+        failedCount: 0,
+        config: {
+          cities: ['北京', '上海', '广州', '深圳'],
+          products: ['手机', '平板', '笔记本'],
+          materials: 2
+        }
+      },
+      {
+        id: '100234568',
+        name: '全国多城市-电子产品大促',
+        planCount: 48,
+        creator: '李四',
+        createTime: '2026-01-15 13:15:10',
+        status: 'running',
+        actualCount: 32,
+        successCount: 32,
+        failedCount: 0,
+        progress: 67,
+        config: {}
+      },
+      {
+        id: '100234569',
+        name: '上海-夏季新品发布',
+        planCount: 12,
+        creator: '王五',
+        createTime: '2026-01-15 11:20:45',
+        status: 'partial',
+        actualCount: 12,
+        successCount: 10,
+        failedCount: 2,
+        config: {}
+      },
+      {
+        id: '100234570',
+        name: '深圳-APP下载推广',
+        planCount: 30,
+        creator: '赵六',
+        createTime: '2026-01-15 10:05:30',
+        status: 'pending',
+        actualCount: 0,
+        successCount: 0,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234571',
+        name: '广州-本地服务投放测试',
+        planCount: 6,
+        creator: '张三',
+        createTime: '2026-01-15 09:30:15',
+        status: 'draft',
+        actualCount: 0,
+        successCount: 0,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234572',
+        name: '成都-区域投放实验',
+        planCount: 18,
+        creator: '李四',
+        createTime: '2026-01-14 16:45:20',
+        status: 'failed',
+        actualCount: 0,
+        successCount: 0,
+        failedCount: 18,
+        errorMsg: 'API限流，请稍后重试',
+        config: {}
+      },
+      {
+        id: '100234573',
+        name: '杭州-品牌广告投放',
+        planCount: 36,
+        creator: '王五',
+        createTime: '2026-01-14 15:20:10',
+        status: 'success',
+        actualCount: 36,
+        successCount: 36,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234574',
+        name: '南京-季度营销活动',
+        planCount: 15,
+        creator: '赵六',
+        createTime: '2026-01-14 14:10:55',
+        status: 'success',
+        actualCount: 15,
+        successCount: 15,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234575',
+        name: '重庆-新用户拉新',
+        planCount: 20,
+        creator: '张三',
+        createTime: '2026-01-14 11:30:40',
+        status: 'pending',
+        actualCount: 0,
+        successCount: 0,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234576',
+        name: '西安-双十一预热',
+        planCount: 60,
+        creator: '李四',
+        createTime: '2026-01-14 10:15:25',
+        status: 'success',
+        actualCount: 60,
+        successCount: 58,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234577',
+        name: '武汉-周年庆典推广',
+        planCount: 8,
+        creator: '王五',
+        createTime: '2026-01-13 17:20:15',
+        status: 'draft',
+        actualCount: 0,
+        successCount: 0,
+        failedCount: 0,
+        config: {}
+      },
+      {
+        id: '100234578',
+        name: '长沙-测试批量创建',
+        planCount: 3,
+        creator: '赵六',
+        createTime: '2026-01-13 16:05:50',
+        status: 'success',
+        actualCount: 3,
+        successCount: 3,
+        failedCount: 0,
+        config: {}
+      }
+    ];
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      detailModal = new Modal('detailModal');
+      deleteModal = new Modal('deleteModal');
+      allTasks = mockTasks;
+      renderTable();
+      updateStats();
+    });
+
+    // 渲染表格
+    function renderTable() {
+      const tbody = document.getElementById('taskTableBody');
+      const statusFilter = document.getElementById('statusFilter').value;
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+
+      // 筛选数据
+      let filteredTasks = allTasks.filter(task => {
+        const matchStatus = !statusFilter || task.status === statusFilter;
+        const matchSearch = !searchText ||
+          task.id.includes(searchText) ||
+          task.name.toLowerCase().includes(searchText);
+        return matchStatus && matchSearch;
+      });
+
+      // 分页
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageTasks = filteredTasks.slice(start, end);
+
+      // 清空表格
+      tbody.innerHTML = '';
+
+      // 填充数据
+      if (pageTasks.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">暂无数据</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        pageTasks.forEach(task => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><span class="id-text">${task.id}</span></td>
+            <td>
+              <div style="font-weight: 500;">${task.name}</div>
+              ${task.status === 'running' ? `
+                <div class="progress-bar-wrapper">
+                  <div class="progress">
+                    <div class="progress-bar" style="width: ${task.progress}%"></div>
+                  </div>
+                  <div class="progress-text">${task.actualCount}/${task.planCount} (${task.progress}%)</div>
+                </div>
+              ` : ''}
+            </td>
+            <td>${task.planCount}</td>
+            <td>${task.creator}</td>
+            <td style="font-size: 13px;">${task.createTime}</td>
+            <td>${getStatusBadge(task)}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-text btn-small" onclick="viewDetail('${task.id}')">
+                  查看
+                </button>
+                ${task.status === 'draft' ? `
+                  <button class="btn btn-text btn-small" onclick="continueEdit('${task.id}')">
+                    编辑
+                  </button>
+                ` : `
+                  <button class="btn btn-text btn-small" onclick="copyTask('${task.id}')">
+                    复制
+                  </button>
+                `}
+                ${task.status === 'draft' || task.status === 'failed' ? `
+                  <button class="btn btn-text btn-small text-error" onclick="deleteTask('${task.id}')">
+                    删除
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // 更新分页信息
+      document.getElementById('listCount').textContent = filteredTasks.length;
+      document.getElementById('pageStart').textContent = filteredTasks.length > 0 ? start + 1 : 0;
+      document.getElementById('pageEnd').textContent = Math.min(end, filteredTasks.length);
+      document.getElementById('pageTotal').textContent = filteredTasks.length;
+
+      // 更新分页按钮状态
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = end >= filteredTasks.length;
+    }
+
+    // 获取状态徽章
+    function getStatusBadge(task) {
+      const statusMap = {
+        draft: { class: 'status-draft', text: '草稿' },
+        pending: { class: 'status-pending', text: '待执行' },
+        running: { class: 'status-running', text: '执行中' },
+        success: { class: 'status-success', text: '已完成' },
+        partial: { class: 'status-partial', text: '部分成功' },
+        failed: { class: 'status-failed', text: '失败' }
+      };
+
+      const status = statusMap[task.status] || statusMap.draft;
+      let badge = `<span class="status-badge ${status.class}">${status.text}</span>`;
+
+      if (task.status === 'success' || task.status === 'partial') {
+        badge += `<div style="font-size: 11px; color: var(--secondary); margin-top: 4px;">
+          成功 ${task.successCount}/${task.actualCount}
+        </div>`;
+      }
+
+      return badge;
+    }
+
+    // 更新统计数据
+    function updateStats() {
+      document.getElementById('totalTasks').textContent = allTasks.length;
+      document.getElementById('runningTasks').textContent =
+        allTasks.filter(t => t.status === 'running').length;
+      document.getElementById('todayComplete').textContent =
+        allTasks.filter(t => t.status === 'success' && t.createTime.startsWith('2026-01-15')).length;
+
+      const totalAds = allTasks.reduce((sum, t) => sum + (t.successCount || 0), 0);
+      document.getElementById('totalAds').textContent = totalAds.toLocaleString();
+    }
+
+    // 筛选列表
+    function filterList() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    // 重置筛选
+    function resetFilters() {
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('searchInput').value = '';
+      filterList();
+    }
+
+    // 刷新列表
+    function refreshList() {
+      Message.success('列表已刷新');
+      renderTable();
+      updateStats();
+    }
+
+    // 上一页
+    function previousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    // 下一页
+    function nextPage() {
+      currentPage++;
+      renderTable();
+    }
+
+    // 新建创编
+    function createNew() {
+      window.location.href = 'create-new.html';
+    }
+
+    // 查看详情
+    function viewDetail(taskId) {
+      currentTaskId = taskId;
+      const task = allTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const content = document.getElementById('detailContent');
+      content.innerHTML = `
+        <div style="line-height: 2;">
+          <h3 style="margin-bottom: 16px;">${task.name}</h3>
+
+          <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; margin-bottom: 24px;">
+            <div style="color: var(--secondary);">创编ID:</div>
+            <div class="id-text">${task.id}</div>
+
+            <div style="color: var(--secondary);">创建人员:</div>
+            <div>${task.creator}</div>
+
+            <div style="color: var(--secondary);">创建时间:</div>
+            <div>${task.createTime}</div>
+
+            <div style="color: var(--secondary);">执行状态:</div>
+            <div>${getStatusBadge(task)}</div>
+
+            <div style="color: var(--secondary);">预计计划数:</div>
+            <div>${task.planCount}</div>
+
+            ${task.actualCount > 0 ? `
+              <div style="color: var(--secondary);">实际生成:</div>
+              <div>${task.actualCount}</div>
+
+              <div style="color: var(--secondary);">成功/失败:</div>
+              <div>
+                <span class="text-success">${task.successCount} 成功</span>
+                ${task.failedCount > 0 ? `/ <span class="text-error">${task.failedCount} 失败</span>` : ''}
+              </div>
+            ` : ''}
+
+            ${task.errorMsg ? `
+              <div style="color: var(--secondary);">失败原因:</div>
+              <div class="text-error">${task.errorMsg}</div>
+            ` : ''}
+          </div>
+
+          ${Object.keys(task.config).length > 0 ? `
+            <h4 style="margin-bottom: 12px;">配置信息</h4>
+            <div style="background: var(--gray-1); padding: 16px; border-radius: var(--radius-md);">
+              ${task.config.cities ? `<div>城市: ${task.config.cities.join(', ')}</div>` : ''}
+              ${task.config.products ? `<div>产品: ${task.config.products.join(', ')}</div>` : ''}
+              ${task.config.materials ? `<div>素材数: ${task.config.materials}</div>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      detailModal.show();
+    }
+
+    // 隐藏详情
+    function hideDetail() {
+      detailModal.hide();
+    }
+
+    // 继续编辑
+    function continueEdit(taskId) {
+      DataStore.save('editingTaskId', taskId);
+      Message.info('正在加载草稿...');
+      setTimeout(() => {
+        window.location.href = 'config-campaign.html';
+      }, 500);
+    }
+
+    // 复制任务
+    function copyTask(taskId) {
+      const task = allTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      DataStore.save('copyFromTaskId', taskId);
+      Message.success('正在复制创编配置...');
+      setTimeout(() => {
+        window.location.href = 'config-campaign.html';
+      }, 500);
+    }
+
+    // 删除任务
+    function deleteTask(taskId) {
+      taskToDelete = taskId;
+      const task = allTasks.find(t => t.id === taskId);
+      if (task) {
+        document.getElementById('deleteTaskId').textContent = task.id;
+        deleteModal.show();
+      }
+    }
+
+    // 隐藏删除弹窗
+    function hideDelete() {
+      deleteModal.hide();
+      taskToDelete = null;
+    }
+
+    // 确认删除
+    function confirmDelete() {
+      if (taskToDelete) {
+        allTasks = allTasks.filter(t => t.id !== taskToDelete);
+        Message.success('删除成功');
+        hideDelete();
+        renderTable();
+        updateStats();
+      }
+    }
+
+    // 定时更新执行中的任务进度
+    setInterval(() => {
+      let hasRunning = false;
+      allTasks.forEach(task => {
+        if (task.status === 'running') {
+          hasRunning = true;
+          if (task.progress < 100) {
+            task.progress += Math.floor(Math.random() * 10);
+            task.actualCount = Math.floor(task.planCount * task.progress / 100);
+            task.successCount = task.actualCount;
+            if (task.progress >= 100) {
+              task.progress = 100;
+              task.status = 'success';
+              task.actualCount = task.planCount;
+              task.successCount = task.planCount;
+            }
+          }
+        }
+      });
+      if (hasRunning) {
+        renderTable();
+        updateStats();
+      }
+    }, 3000);
+  </script>
+</body>
+</html>

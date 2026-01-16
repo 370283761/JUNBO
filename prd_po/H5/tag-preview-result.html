@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预览生成结果 - 基于标签的智能批量创编</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Step Indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #e8e8e8;
+      color: #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .step-circle.completed {
+      background: #52c41a;
+      color: white;
+    }
+
+    .step-circle.active {
+      background: #1890ff;
+      color: white;
+      box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.2);
+    }
+
+    .step-text {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .step.completed .step-text {
+      color: #52c41a;
+    }
+
+    .step.active .step-text {
+      color: #1890ff;
+      font-weight: 600;
+    }
+
+    .step-line {
+      width: 60px;
+      height: 2px;
+      background: #e8e8e8;
+    }
+
+    .step-line.completed {
+      background: #52c41a;
+    }
+
+    /* Main Content */
+    .main-content {
+      display: flex;
+      gap: 24px;
+    }
+
+    .content-left {
+      flex: 1;
+    }
+
+    .content-right {
+      width: 320px;
+    }
+
+    /* Summary Card */
+    .summary-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .summary-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-label {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .summary-value {
+      font-weight: 600;
+      color: #1a1a1a;
+      font-size: 14px;
+    }
+
+    .summary-value.highlight {
+      color: #1890ff;
+      font-size: 20px;
+    }
+
+    /* Validation Alert */
+    .validation-alert {
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .validation-alert.warning {
+      background: #fffbe6;
+      border-color: #ffe58f;
+    }
+
+    .validation-alert.success {
+      background: #f6ffed;
+      border-color: #b7eb8f;
+    }
+
+    .validation-icon {
+      font-size: 20px;
+    }
+
+    .validation-content {
+      flex: 1;
+    }
+
+    .validation-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .validation-list {
+      font-size: 13px;
+      color: #666;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .validation-list li {
+      padding: 2px 0;
+    }
+
+    .validation-list li::before {
+      content: "✓ ";
+      color: #52c41a;
+      font-weight: bold;
+    }
+
+    /* List Card */
+    .list-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .list-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .list-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .list-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+
+    .batch-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .plan-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .plan-table thead {
+      position: sticky;
+      top: 0;
+      background: #fafafa;
+      z-index: 10;
+    }
+
+    .plan-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: #666;
+      border-bottom: 2px solid #f0f0f0;
+      white-space: nowrap;
+    }
+
+    .plan-table td {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .plan-table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .plan-table tbody tr.selected {
+      background: #e6f7ff;
+    }
+
+    .checkbox-cell {
+      width: 40px;
+    }
+
+    .checkbox-cell input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .plan-name {
+      font-weight: 500;
+      color: #1890ff;
+      cursor: pointer;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .plan-name:hover {
+      text-decoration: underline;
+    }
+
+    .tag-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .tag-badge.material-decompress {
+      background: #e6f7ff;
+      color: #1890ff;
+    }
+
+    .tag-badge.material-scroll {
+      background: #f9f0ff;
+      color: #722ed1;
+    }
+
+    .tag-badge.material-adx {
+      background: #fff7e6;
+      color: #fa8c16;
+    }
+
+    /* Pagination */
+    .pagination {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    .sidebar-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .sidebar-section {
+      margin-bottom: 16px;
+    }
+
+    .sidebar-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .sidebar-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-chip {
+      padding: 4px 12px;
+      background: #f5f5f5;
+      border-radius: 16px;
+      font-size: 13px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag-chip-count {
+      font-weight: 600;
+      color: #1890ff;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+
+    .stat-label {
+      color: #666;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: #1890ff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #40a9ff;
+    }
+
+    .btn-default {
+      background: white;
+      color: #333;
+      border: 1px solid #d9d9d9;
+    }
+
+    .btn-default:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .btn-danger {
+      background: white;
+      color: #ff4d4f;
+      border: 1px solid #ff4d4f;
+    }
+
+    .btn-danger:hover {
+      background: #ff4d4f;
+      color: white;
+    }
+
+    .btn-large {
+      padding: 12px 32px;
+      font-size: 16px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Detail Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .modal-close {
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+
+    .modal-close:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-row {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      width: 100px;
+      color: #999;
+      font-size: 13px;
+    }
+
+    .detail-value {
+      flex: 1;
+      color: #333;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* Loading State */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f0f0f0;
+      border-top-color: #1890ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .content-right {
+        width: 100%;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 12px;
+      }
+
+      .list-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-box {
+        max-width: none;
+      }
+
+      .table-container {
+        max-height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-top">
+        <div class="header-title">预览生成结果</div>
+        <div class="header-actions">
+          <button class="btn btn-default" onclick="goBack()">
+            ← 返回修改
+          </button>
+          <button class="btn btn-default" onclick="exportExcel()">
+            📊 导出Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Step Indicator -->
+      <div class="steps">
+        <div class="step completed">
+          <div class="step-circle completed">✓</div>
+          <div class="step-text">选择标签</div>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step completed">
+          <div class="step-circle completed">✓</div>
+          <div class="step-text">素材&小说</div>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step completed">
+          <div class="step-circle completed">✓</div>
+          <div class="step-text">配置规则</div>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step active">
+          <div class="step-circle active">4</div>
+          <div class="step-text">预览提交</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Left Content -->
+      <div class="content-left">
+        <!-- Summary Card -->
+        <div class="summary-card">
+          <div class="summary-title">📊 生成摘要</div>
+          <div class="summary-row">
+            <div class="summary-label">预计生成</div>
+            <div class="summary-value highlight" id="totalPlans">750</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">涉及主体</div>
+            <div class="summary-value" id="totalSubjects">25</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">涉及账户</div>
+            <div class="summary-value" id="totalAccounts">125</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">涉及项目</div>
+            <div class="summary-value" id="totalProjects">481</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">使用素材</div>
+            <div class="summary-value" id="totalMaterials">15,801</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">推广小说</div>
+            <div class="summary-value" id="totalBooks">234</div>
+          </div>
+        </div>
+
+        <!-- Validation Alert -->
+        <div class="validation-alert success">
+          <div class="validation-icon">✓</div>
+          <div class="validation-content">
+            <div class="validation-title">智能检查通过</div>
+            <ul class="validation-list">
+              <li>数据完整性验证通过</li>
+              <li>未发现重复计划</li>
+              <li>素材分配合理</li>
+              <li>预算预估正常（约 37,500 元/天）</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- List Card -->
+        <div class="list-card">
+          <div class="list-header">
+            <div class="list-title">广告计划列表（前 100 条预览）</div>
+            <div class="list-controls">
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="搜索广告计划..." id="searchInput" oninput="searchPlans()">
+              </div>
+              <div class="batch-actions">
+                <button class="btn btn-default" onclick="selectAll()">
+                  全选
+                </button>
+                <button class="btn btn-danger" onclick="deleteSelected()" id="deleteBtn" disabled>
+                  删除选中
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="plan-table">
+              <thead>
+                <tr>
+                  <th class="checkbox-cell">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                  </th>
+                  <th>序号</th>
+                  <th>广告计划名称</th>
+                  <th>主体</th>
+                  <th>账户</th>
+                  <th>项目</th>
+                  <th>小说</th>
+                  <th>素材类型</th>
+                  <th>预算</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="planTableBody">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info">
+              显示 <span id="pageStart">1</span>-<span id="pageEnd">100</span>，共 <span id="totalCount">750</span> 条
+            </div>
+            <div class="pagination-controls">
+              <button class="btn btn-default" onclick="prevPage()" id="prevBtn" disabled>上一页</button>
+              <button class="btn btn-default" onclick="nextPage()" id="nextBtn">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="content-right">
+        <div class="sidebar">
+          <!-- Tags Summary -->
+          <div class="sidebar-card">
+            <div class="sidebar-title">已选标签</div>
+
+            <div class="sidebar-section">
+              <div class="sidebar-label">主体标签</div>
+              <div class="tag-list" id="subjectTagsList"></div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="sidebar-label">项目标签</div>
+              <div class="tag-list" id="projectTagsList"></div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="sidebar-label">素材标签</div>
+              <div class="tag-list" id="materialTagsList"></div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="sidebar-label">小说标签</div>
+              <div class="tag-list" id="bookTagsList"></div>
+            </div>
+          </div>
+
+          <!-- Rule Summary -->
+          <div class="sidebar-card">
+            <div class="sidebar-title">生成规则</div>
+            <div class="stat-row">
+              <div class="stat-label">规则模板</div>
+              <div class="stat-value" id="ruleTemplate">按账户生成</div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label">每账户广告数</div>
+              <div class="stat-value">6 个</div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label">素材分配</div>
+              <div class="stat-value">3解压 + 3滚屏</div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="sidebar-card">
+            <button class="btn btn-primary btn-large" onclick="submitCreation()">
+              🚀 确认提交创建
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">广告计划详情</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <div class="detail-section-title">📋 基础信息</div>
+          <div class="detail-row">
+            <div class="detail-label">计划名称</div>
+            <div class="detail-value" id="detailName"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">主体</div>
+            <div class="detail-value" id="detailSubject"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">账户</div>
+            <div class="detail-value" id="detailAccount"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">项目</div>
+            <div class="detail-value" id="detailProject"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">小说</div>
+            <div class="detail-value" id="detailBook"></div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🎨 创意信息</div>
+          <div class="detail-row">
+            <div class="detail-label">素材类型</div>
+            <div class="detail-value" id="detailMaterialType"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">素材ID</div>
+            <div class="detail-value" id="detailMaterialId"></div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">⚙️ 投放配置</div>
+          <div class="detail-row">
+            <div class="detail-label">日预算</div>
+            <div class="detail-value" id="detailBudget"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">出价方式</div>
+            <div class="detail-value">oCPM</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">投放时段</div>
+            <div class="detail-value">全天</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock Data Store (using localStorage for cross-page data)
+    const DataStore = {
+      save: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+      load: (key) => {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+      },
+      remove: (key) => localStorage.removeItem(key)
+    };
+
+    // Message utility
+    const Message = {
+      success: (msg) => alert('✓ ' + msg),
+      error: (msg) => alert('✗ ' + msg),
+      warning: (msg) => alert('⚠ ' + msg)
+    };
+
+    // Tag name mapping
+    const tagNames = {
+      subject_running: '跑量主体',
+      subject_high_conversion: '高转化主体',
+      subject_new: '新主体',
+      subject_beijing_vip: '北京地区VIP客户',
+      project_badao: '霸道总裁',
+      project_chuanyue: '穿越重生',
+      project_xuanhuan: '玄幻修仙',
+      project_dushi: '都市言情',
+      project_gufeng: '古风仙侠',
+      project_xuanyi: '悬疑推理',
+      project_kehuan: '科幻未来',
+      project_high_conversion: '高转化',
+      project_new: '新上线',
+      project_rising: '上升期',
+      project_stable: '稳定期',
+      material_decompress: '解压',
+      material_scroll: '滚屏',
+      material_adx: 'ADX',
+      material_high_exposure: '高曝光',
+      material_high_click: '高点击',
+      material_new: '新素材',
+      book_hot: '爆款',
+      book_high_conversion: '高转化',
+      book_new: '新上架',
+      book_author_top: '头部作者',
+      book_author_new: '新人作者'
+    };
+
+    // Tag counts mapping
+    const tagCounts = {
+      subject_running: 30,
+      subject_high_conversion: 15,
+      subject_new: 8,
+      subject_beijing_vip: 5,
+      project_badao: 356,
+      project_chuanyue: 289,
+      project_xuanhuan: 234,
+      project_dushi: 198,
+      project_gufeng: 167,
+      project_xuanyi: 145,
+      project_kehuan: 123,
+      project_high_conversion: 125,
+      project_new: 89,
+      project_rising: 78,
+      project_stable: 156,
+      material_decompress: 12345,
+      material_scroll: 8967,
+      material_adx: 5432,
+      material_high_exposure: 3456,
+      material_high_click: 2341,
+      material_new: 1234,
+      book_hot: 234,
+      book_high_conversion: 156,
+      book_new: 189,
+      book_author_top: 123,
+      book_author_new: 234
+    };
+
+    // State
+    let allPlans = [];
+    let displayedPlans = [];
+    let selectedPlanIds = new Set();
+    let currentPage = 0;
+    const pageSize = 100;
+
+    // Load data and initialize
+    function init() {
+      const allTags = DataStore.load('selectedTags_all');
+      const ruleConfig = DataStore.load('ruleConfig');
+
+      if (!allTags || !ruleConfig) {
+        Message.error('缺少必要数据，返回重新配置');
+        setTimeout(() => {
+          window.location.href = 'tag-selection-step1.html';
+        }, 1500);
+        return;
+      }
+
+      // Render sidebar tags
+      renderSidebarTags(allTags);
+      renderRuleSummary(ruleConfig);
+
+      // Calculate summary stats
+      calculateSummary(allTags);
+
+      // Generate mock plans
+      generateMockPlans(ruleConfig.estimate || 750);
+
+      // Render initial page
+      renderPlans();
+    }
+
+    // Render sidebar tags
+    function renderSidebarTags(allTags) {
+      const renderTagList = (containerId, tagIds) => {
+        const container = document.getElementById(containerId);
+        if (!tagIds || tagIds.length === 0) {
+          container.innerHTML = '<div style="color: #999; font-size: 13px;">未选择</div>';
+          return;
+        }
+
+        container.innerHTML = tagIds.map(tagId => {
+          const name = tagNames[tagId] || tagId;
+          const count = tagCounts[tagId] || 0;
+          return `<div class="tag-chip">${name} <span class="tag-chip-count">${count}</span></div>`;
+        }).join('');
+      };
+
+      renderTagList('subjectTagsList', allTags.subject);
+      renderTagList('projectTagsList', allTags.project);
+      renderTagList('materialTagsList', allTags.material);
+      renderTagList('bookTagsList', allTags.book);
+    }
+
+    // Render rule summary
+    function renderRuleSummary(ruleConfig) {
+      const templateMap = {
+        template1: '全量组合',
+        template2: '按账户生成',
+        custom: '自定义规则'
+      };
+      document.getElementById('ruleTemplate').textContent = templateMap[ruleConfig.template] || '按账户生成';
+    }
+
+    // Calculate summary statistics
+    function calculateSummary(allTags) {
+      let totalSubjects = 0;
+      let totalProjects = 0;
+      let totalMaterials = 0;
+      let totalBooks = 0;
+
+      if (allTags.subject) {
+        allTags.subject.forEach(tagId => {
+          totalSubjects += tagCounts[tagId] || 0;
+        });
+      }
+
+      if (allTags.project) {
+        allTags.project.forEach(tagId => {
+          totalProjects += tagCounts[tagId] || 0;
+        });
+      }
+
+      if (allTags.material) {
+        allTags.material.forEach(tagId => {
+          totalMaterials += tagCounts[tagId] || 0;
+        });
+      }
+
+      if (allTags.book) {
+        allTags.book.forEach(tagId => {
+          totalBooks += tagCounts[tagId] || 0;
+        });
+      }
+
+      // Assuming 125 accounts from rule config
+      const totalAccounts = 125;
+
+      document.getElementById('totalSubjects').textContent = totalSubjects;
+      document.getElementById('totalAccounts').textContent = totalAccounts;
+      document.getElementById('totalProjects').textContent = totalProjects;
+      document.getElementById('totalMaterials').textContent = totalMaterials.toLocaleString();
+      document.getElementById('totalBooks').textContent = totalBooks;
+    }
+
+    // Generate mock plans
+    function generateMockPlans(count) {
+      const subjects = ['主体A', '主体B', '主体C', '主体D', '主体E'];
+      const projects = ['霸道总裁', '穿越重生', '玄幻修仙', '都市言情'];
+      const books = ['《总裁的替身妻子》', '《重生之豪门千金》', '《修仙归来当奶爸》', '《都市最强战神》'];
+      const materialTypes = ['decompress', 'scroll', 'adx'];
+      const materialTypeNames = { decompress: '解压', scroll: '滚屏', adx: 'ADX' };
+
+      allPlans = [];
+      for (let i = 1; i <= count; i++) {
+        const subject = subjects[Math.floor(Math.random() * subjects.length)];
+        const accountNum = Math.floor(Math.random() * 20) + 1;
+        const project = projects[Math.floor(Math.random() * projects.length)];
+        const book = books[Math.floor(Math.random() * books.length)];
+        const materialType = materialTypes[Math.floor(Math.random() * materialTypes.length)];
+        const budget = 50;
+
+        allPlans.push({
+          id: `plan_${i}`,
+          index: i,
+          name: `${subject}-账户${accountNum}-${project}-${i.toString().padStart(3, '0')}`,
+          subject: subject,
+          account: `账户${accountNum}`,
+          project: project,
+          book: book,
+          materialType: materialType,
+          materialTypeName: materialTypeNames[materialType],
+          materialId: `MAT${(1000 + i).toString()}`,
+          budget: budget
+        });
+      }
+
+      displayedPlans = allPlans.slice(0, pageSize);
+      document.getElementById('totalCount').textContent = allPlans.length;
+    }
+
+    // Render plans table
+    function renderPlans() {
+      const tbody = document.getElementById('planTableBody');
+
+      if (displayedPlans.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div>暂无数据</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayedPlans.map(plan => {
+        const isSelected = selectedPlanIds.has(plan.id);
+        return `
+          <tr class="${isSelected ? 'selected' : ''}" data-plan-id="${plan.id}">
+            <td class="checkbox-cell">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="togglePlanSelection('${plan.id}')">
+            </td>
+            <td>${plan.index}</td>
+            <td>
+              <div class="plan-name" onclick="showDetail('${plan.id}')">${plan.name}</div>
+            </td>
+            <td>${plan.subject}</td>
+            <td>${plan.account}</td>
+            <td>${plan.project}</td>
+            <td>${plan.book}</td>
+            <td>
+              <span class="tag-badge material-${plan.materialType}">${plan.materialTypeName}</span>
+            </td>
+            <td>${plan.budget}元/天</td>
+            <td>
+              <button class="btn btn-default" onclick="showDetail('${plan.id}')" style="padding: 4px 8px; font-size: 12px;">查看</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      updatePaginationInfo();
+    }
+
+    // Toggle plan selection
+    function togglePlanSelection(planId) {
+      if (selectedPlanIds.has(planId)) {
+        selectedPlanIds.delete(planId);
+      } else {
+        selectedPlanIds.add(planId);
+      }
+
+      // Update row class
+      const row = document.querySelector(`tr[data-plan-id="${planId}"]`);
+      if (row) {
+        row.classList.toggle('selected', selectedPlanIds.has(planId));
+      }
+
+      // Update select all checkbox
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      selectAllCheckbox.checked = displayedPlans.length > 0 && displayedPlans.every(p => selectedPlanIds.has(p.id));
+
+      // Enable/disable delete button
+      document.getElementById('deleteBtn').disabled = selectedPlanIds.size === 0;
+    }
+
+    // Toggle select all
+    function toggleSelectAll() {
+      const checkbox = document.getElementById('selectAllCheckbox');
+
+      if (checkbox.checked) {
+        displayedPlans.forEach(plan => selectedPlanIds.add(plan.id));
+      } else {
+        displayedPlans.forEach(plan => selectedPlanIds.delete(plan.id));
+      }
+
+      renderPlans();
+      document.getElementById('deleteBtn').disabled = selectedPlanIds.size === 0;
+    }
+
+    // Select all
+    function selectAll() {
+      document.getElementById('selectAllCheckbox').checked = true;
+      toggleSelectAll();
+    }
+
+    // Delete selected
+    function deleteSelected() {
+      if (selectedPlanIds.size === 0) return;
+
+      if (!confirm(`确定要删除选中的 ${selectedPlanIds.size} 条广告计划吗？`)) {
+        return;
+      }
+
+      // Remove selected plans
+      allPlans = allPlans.filter(plan => !selectedPlanIds.has(plan.id));
+
+      // Re-index
+      allPlans.forEach((plan, index) => {
+        plan.index = index + 1;
+      });
+
+      // Clear selection
+      selectedPlanIds.clear();
+
+      // Update display
+      currentPage = 0;
+      displayedPlans = allPlans.slice(0, pageSize);
+
+      document.getElementById('totalCount').textContent = allPlans.length;
+      document.getElementById('totalPlans').textContent = allPlans.length;
+
+      renderPlans();
+      Message.success('删除成功');
+    }
+
+    // Search plans
+    function searchPlans() {
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      if (!keyword) {
+        displayedPlans = allPlans.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      } else {
+        const filtered = allPlans.filter(plan =>
+          plan.name.toLowerCase().includes(keyword) ||
+          plan.subject.toLowerCase().includes(keyword) ||
+          plan.account.toLowerCase().includes(keyword) ||
+          plan.project.toLowerCase().includes(keyword) ||
+          plan.book.toLowerCase().includes(keyword)
+        );
+        displayedPlans = filtered.slice(0, pageSize);
+        currentPage = 0;
+      }
+
+      renderPlans();
+    }
+
+    // Pagination
+    function updatePaginationInfo() {
+      const start = currentPage * pageSize + 1;
+      const end = Math.min((currentPage + 1) * pageSize, allPlans.length);
+
+      document.getElementById('pageStart').textContent = start;
+      document.getElementById('pageEnd').textContent = end;
+
+      document.getElementById('prevBtn').disabled = currentPage === 0;
+      document.getElementById('nextBtn').disabled = end >= allPlans.length;
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        displayedPlans = allPlans.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+        renderPlans();
+      }
+    }
+
+    function nextPage() {
+      if ((currentPage + 1) * pageSize < allPlans.length) {
+        currentPage++;
+        displayedPlans = allPlans.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+        renderPlans();
+      }
+    }
+
+    // Show detail modal
+    function showDetail(planId) {
+      const plan = allPlans.find(p => p.id === planId);
+      if (!plan) return;
+
+      document.getElementById('modalTitle').textContent = '广告计划详情';
+      document.getElementById('detailName').textContent = plan.name;
+      document.getElementById('detailSubject').textContent = plan.subject;
+      document.getElementById('detailAccount').textContent = plan.account;
+      document.getElementById('detailProject').textContent = plan.project;
+      document.getElementById('detailBook').textContent = plan.book;
+      document.getElementById('detailMaterialType').textContent = plan.materialTypeName;
+      document.getElementById('detailMaterialId').textContent = plan.materialId;
+      document.getElementById('detailBudget').textContent = `${plan.budget}元/天`;
+
+      document.getElementById('detailModal').classList.add('active');
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // Go back
+    function goBack() {
+      window.location.href = 'tag-rule-config.html';
+    }
+
+    // Export Excel
+    function exportExcel() {
+      Message.success('导出功能开发中，将导出 ' + allPlans.length + ' 条数据');
+    }
+
+    // Submit creation
+    function submitCreation() {
+      if (allPlans.length === 0) {
+        Message.error('没有可提交的广告计划');
+        return;
+      }
+
+      if (!confirm(`确定提交创建 ${allPlans.length} 条广告计划吗？`)) {
+        return;
+      }
+
+      // Simulate submission
+      Message.success('提交成功！正在创建广告计划...');
+
+      // Clear stored data
+      DataStore.remove('selectedTags_step1');
+      DataStore.remove('selectedTags_step2');
+      DataStore.remove('selectedTags_all');
+      DataStore.remove('ruleConfig');
+
+      // Redirect to list page
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1500);
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>

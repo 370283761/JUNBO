@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据维度选择 - 优化师批量创编</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .selection-container {
+      display: flex;
+      gap: var(--space-6);
+      min-height: calc(100vh - 64px - 100px);
+    }
+
+    .selection-left {
+      flex: 1;
+      max-width: 800px;
+    }
+
+    .selection-right {
+      width: 320px;
+      position: sticky;
+      top: var(--space-6);
+      height: fit-content;
+    }
+
+    .dimension-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+
+    .dimension-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .dimension-content {
+      border: 1px solid var(--gray-3);
+      border-radius: var(--radius-md);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .dimension-item {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--gray-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      cursor: pointer;
+      transition: background var(--transition-base);
+    }
+
+    .dimension-item:last-child {
+      border-bottom: none;
+    }
+
+    .dimension-item:hover {
+      background: var(--gray-1);
+    }
+
+    .dimension-item-info {
+      flex: 1;
+    }
+
+    .dimension-item-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .dimension-item-meta {
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .dimension-count {
+      margin-top: var(--space-2);
+      color: var(--primary-6);
+      font-size: 14px;
+    }
+
+    .filter-section {
+      background: var(--gray-1);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .filter-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-input-small {
+      width: 80px;
+    }
+
+    .preview-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    .preview-section {
+      margin-bottom: var(--space-5);
+    }
+
+    .preview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-section-title {
+      font-size: 14px;
+      color: var(--secondary);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-2) 0;
+      border-bottom: 1px dashed var(--gray-3);
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--text);
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--primary-6);
+    }
+
+    .estimate-box {
+      background: var(--primary-1);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      text-align: center;
+      margin-top: var(--space-3);
+    }
+
+    .estimate-label {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .estimate-value {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--primary-6);
+    }
+
+    .estimate-hint {
+      font-size: 12px;
+      color: var(--secondary);
+      margin-top: var(--space-2);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">优化师批量创编 > 选择数据维度</h1>
+      <div class="flex gap-3">
+        <button class="btn btn-default" onclick="goBack()">← 返回</button>
+      </div>
+    </div>
+
+    <!-- 步骤指示器 -->
+    <div class="steps">
+      <div class="step current">
+        <div class="step-icon">1</div>
+        <div class="step-label">选择维度</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">2</div>
+        <div class="step-label">配置规则</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">3</div>
+        <div class="step-label">预览结果</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">4</div>
+        <div class="step-label">提交创建</div>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="page-content">
+      <div class="selection-container">
+        <!-- 左侧：维度选择 -->
+        <div class="selection-left">
+          <!-- 1. 选择主体 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>1️⃣</span>
+              <span>选择主体</span>
+              <span style="color: var(--error);">*</span>
+            </div>
+            <input type="text" class="input" placeholder="搜索主体..." id="searchSubject" style="margin-bottom: 12px;">
+            <div class="dimension-content" id="subjectList">
+              <!-- 动态填充 -->
+            </div>
+            <div class="dimension-count" id="subjectCount">已选择 0 个主体</div>
+          </div>
+
+          <!-- 2. 筛选账户 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>2️⃣</span>
+              <span>筛选账户</span>
+              <span style="font-size: 12px; color: var(--secondary); font-weight: normal;">（可选）</span>
+            </div>
+            <div class="filter-section">
+              <div class="filter-row">
+                <label class="checkbox">
+                  <input type="checkbox" id="filterConversion" onchange="updateFilters()">
+                  <span>转化数 ></span>
+                </label>
+                <input type="number" class="input filter-input-small" id="conversionMin" value="6" min="0">
+              </div>
+              <div class="filter-row">
+                <label class="checkbox">
+                  <input type="checkbox" id="filterOpenDays" onchange="updateFilters()">
+                  <span>开户天数 <</span>
+                </label>
+                <input type="number" class="input filter-input-small" id="openDaysMax" value="5" min="0">
+              </div>
+              <div class="filter-row">
+                <label class="checkbox">
+                  <input type="checkbox" id="filterStatus" onchange="updateFilters()">
+                  <span>账户状态：</span>
+                </label>
+                <select class="input" id="accountStatus" style="width: 120px;">
+                  <option value="running">跑量</option>
+                  <option value="testing">测试</option>
+                  <option value="paused">暂停</option>
+                </select>
+              </div>
+            </div>
+            <div class="dimension-count" id="accountCount">符合条件：0 个账户</div>
+          </div>
+
+          <!-- 3. 选择项目 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>3️⃣</span>
+              <span>选择项目</span>
+              <span style="color: var(--error);">*</span>
+            </div>
+            <div class="dimension-content" id="projectList">
+              <!-- 动态填充 -->
+            </div>
+            <div class="dimension-count" id="projectCount">已选择 0 个项目</div>
+          </div>
+
+          <!-- 4. 选择小说 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>4️⃣</span>
+              <span>选择小说</span>
+            </div>
+            <input type="text" class="input" placeholder="搜索小说..." id="searchBook" style="margin-bottom: 12px;">
+            <div class="dimension-content" id="bookList">
+              <!-- 动态填充 -->
+            </div>
+            <div class="dimension-count" id="bookCount">已选择 0 个小说</div>
+          </div>
+
+          <!-- 5. 选择素材 -->
+          <div class="dimension-section">
+            <div class="dimension-title">
+              <span>5️⃣</span>
+              <span>选择素材</span>
+              <span style="color: var(--error);">*</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label style="font-weight: 500; display: block; margin-bottom: 8px;">素材类型：</label>
+              <label class="checkbox" style="margin-right: 16px;">
+                <input type="checkbox" value="decompress" onchange="updateMaterials()" checked>
+                <span>解压 (<span id="decompressCount">0</span>个)</span>
+              </label>
+              <label class="checkbox" style="margin-right: 16px;">
+                <input type="checkbox" value="scroll" onchange="updateMaterials()" checked>
+                <span>滚屏 (<span id="scrollCount">0</span>个)</span>
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" value="adx" onchange="updateMaterials()" checked>
+                <span>ADX (<span id="adxCount">0</span>个)</span>
+              </label>
+            </div>
+            <div class="dimension-count" id="materialCount">已选择 0 个素材</div>
+          </div>
+        </div>
+
+        <!-- 右侧：实时预览 -->
+        <div class="selection-right">
+          <div class="preview-card">
+            <div class="preview-section">
+              <div class="preview-section-title">
+                <span>📊</span>
+                <span>数据统计</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">主体数量：</span>
+                <span class="stat-value" id="previewSubjects">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">账户数量：</span>
+                <span class="stat-value" id="previewAccounts">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">项目数量：</span>
+                <span class="stat-value" id="previewProjects">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">小说数量：</span>
+                <span class="stat-value" id="previewBooks">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">素材数量：</span>
+                <span class="stat-value" id="previewMaterials">0</span>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-section-title">
+                <span>💡</span>
+                <span>生成预估</span>
+              </div>
+              <div class="estimate-box">
+                <div class="estimate-label">根据当前选择，预计生成：</div>
+                <div class="estimate-value" id="estimatedCount">0</div>
+                <div class="estimate-hint">条广告计划</div>
+              </div>
+              <div class="alert alert-info" style="margin-top: 12px; font-size: 12px;">
+                <span>⚠️</span>
+                <span>请在下一步配置生成规则</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="nextStep()" id="nextBtn" disabled>
+              下一步 →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/generation-engine.js"></script>
+  <script>
+    // 模拟数据
+    const mockData = {
+      subjects: [
+        { id: 'SUB001', name: '主体A', type: 'running', accountCount: 5, conversionCount: 120 },
+        { id: 'SUB002', name: '主体B', type: 'running', accountCount: 3, conversionCount: 85 },
+        { id: 'SUB003', name: '主体C', type: 'testing', accountCount: 2, conversionCount: 45 },
+        { id: 'SUB004', name: '主体D', type: 'paused', accountCount: 2, conversionCount: 10 }
+      ],
+      accounts: [
+        { id: 'ACC001', subjectId: 'SUB001', name: '账户1', conversionCount: 25, openDays: 3, status: 'running' },
+        { id: 'ACC002', subjectId: 'SUB001', name: '账户2', conversionCount: 18, openDays: 4, status: 'running' },
+        { id: 'ACC003', subjectId: 'SUB001', name: '账户3', conversionCount: 30, openDays: 10, status: 'running' },
+        { id: 'ACC004', subjectId: 'SUB002', name: '账户4', conversionCount: 8, openDays: 2, status: 'running' },
+        { id: 'ACC005', subjectId: 'SUB002', name: '账户5', conversionCount: 12, openDays: 6, status: 'running' },
+        { id: 'ACC006', subjectId: 'SUB003', name: '账户6', conversionCount: 5, openDays: 1, status: 'testing' }
+      ],
+      projects: [
+        { id: 'PRJ001', name: '项目1 - 霸道总裁', category: '言情' },
+        { id: 'PRJ002', name: '项目2 - 穿越重生', category: '穿越' },
+        { id: 'PRJ003', name: '项目3 - 都市言情', category: '言情' }
+      ],
+      books: [
+        { id: 'BOOK001', projectId: 'PRJ001', name: '《总裁的替身妻子》' },
+        { id: 'BOOK002', projectId: 'PRJ001', name: '《豪门契约》' },
+        { id: 'BOOK003', projectId: 'PRJ002', name: '《重生之豪门千金》' },
+        { id: 'BOOK004', projectId: 'PRJ003', name: '《都市情缘》' }
+      ],
+      materials: [
+        { id: 'MAT001', type: 'decompress', source: 'adx', exposure: 10000, clicks: 500 },
+        { id: 'MAT002', type: 'decompress', source: 'self-edit', exposure: 8000, clicks: 400 },
+        { id: 'MAT003', type: 'decompress', source: 'self-edit', exposure: 6000, clicks: 300 },
+        { id: 'MAT004', type: 'scroll', source: 'adx', exposure: 12000, clicks: 800 },
+        { id: 'MAT005', type: 'scroll', source: 'self-edit', exposure: 9000, clicks: 600 },
+        { id: 'MAT006', type: 'adx', source: 'adx', exposure: 15000, clicks: 1000 }
+      ]
+    };
+
+    let selectedData = {
+      subjects: [],
+      accounts: [],
+      projects: [],
+      books: [],
+      materials: []
+    };
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      renderSubjects();
+      renderProjects();
+      renderBooks();
+      updateMaterialCounts();
+      updateMaterials();
+      updatePreview();
+    });
+
+    // 渲染主体列表
+    function renderSubjects() {
+      const container = document.getElementById('subjectList');
+      const searchText = document.getElementById('searchSubject').value.toLowerCase();
+
+      const filtered = mockData.subjects.filter(s =>
+        s.name.toLowerCase().includes(searchText)
+      );
+
+      container.innerHTML = filtered.map(subject => `
+        <div class="dimension-item" onclick="toggleSubject('${subject.id}')">
+          <input type="checkbox" ${selectedData.subjects.some(s => s.id === subject.id) ? 'checked' : ''}
+                 onchange="event.stopPropagation()">
+          <div class="dimension-item-info">
+            <div class="dimension-item-name">${subject.name} (${subject.type === 'running' ? '跑量' : subject.type === 'testing' ? '测试' : '暂停'})</div>
+            <div class="dimension-item-meta">账户:${subject.accountCount} 转化:${subject.conversionCount}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染项目列表
+    function renderProjects() {
+      const container = document.getElementById('projectList');
+      container.innerHTML = mockData.projects.map(project => `
+        <div class="dimension-item" onclick="toggleProject('${project.id}')">
+          <input type="checkbox" ${selectedData.projects.some(p => p.id === project.id) ? 'checked' : ''}
+                 onchange="event.stopPropagation()">
+          <div class="dimension-item-info">
+            <div class="dimension-item-name">${project.name}</div>
+            <div class="dimension-item-meta">${project.category}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染小说列表
+    function renderBooks() {
+      const container = document.getElementById('bookList');
+      const searchText = document.getElementById('searchBook').value.toLowerCase();
+
+      const filtered = mockData.books.filter(b =>
+        b.name.toLowerCase().includes(searchText)
+      );
+
+      container.innerHTML = filtered.map(book => `
+        <div class="dimension-item" onclick="toggleBook('${book.id}')">
+          <input type="checkbox" ${selectedData.books.some(b => b.id === book.id) ? 'checked' : ''}
+                 onchange="event.stopPropagation()">
+          <div class="dimension-item-info">
+            <div class="dimension-item-name">${book.name}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 切换主体选择
+    function toggleSubject(id) {
+      const subject = mockData.subjects.find(s => s.id === id);
+      const index = selectedData.subjects.findIndex(s => s.id === id);
+
+      if (index > -1) {
+        selectedData.subjects.splice(index, 1);
+        // 移除该主体下的账户
+        selectedData.accounts = selectedData.accounts.filter(a => a.subjectId !== id);
+      } else {
+        selectedData.subjects.push(subject);
+        // 自动添加该主体下的账户
+        const subjectAccounts = mockData.accounts.filter(a => a.subjectId === id);
+        selectedData.accounts.push(...subjectAccounts);
+      }
+
+      renderSubjects();
+      updateFilters();
+      updatePreview();
+    }
+
+    // 切换项目选择
+    function toggleProject(id) {
+      const project = mockData.projects.find(p => p.id === id);
+      const index = selectedData.projects.findIndex(p => p.id === id);
+
+      if (index > -1) {
+        selectedData.projects.splice(index, 1);
+      } else {
+        selectedData.projects.push(project);
+      }
+
+      renderProjects();
+      updatePreview();
+    }
+
+    // 切换小说选择
+    function toggleBook(id) {
+      const book = mockData.books.find(b => b.id === id);
+      const index = selectedData.books.findIndex(b => b.id === id);
+
+      if (index > -1) {
+        selectedData.books.splice(index, 1);
+      } else {
+        selectedData.books.push(book);
+      }
+
+      renderBooks();
+      updatePreview();
+    }
+
+    // 更新素材数量
+    function updateMaterialCounts() {
+      document.getElementById('decompressCount').textContent =
+        mockData.materials.filter(m => m.type === 'decompress').length;
+      document.getElementById('scrollCount').textContent =
+        mockData.materials.filter(m => m.type === 'scroll').length;
+      document.getElementById('adxCount').textContent =
+        mockData.materials.filter(m => m.type === 'adx').length;
+    }
+
+    // 更新素材选择
+    function updateMaterials() {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"][value]');
+      const selectedTypes = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+      selectedData.materials = mockData.materials.filter(m =>
+        selectedTypes.includes(m.type)
+      );
+
+      updatePreview();
+    }
+
+    // 更新账户筛选
+    function updateFilters() {
+      const useConversion = document.getElementById('filterConversion').checked;
+      const useOpenDays = document.getElementById('filterOpenDays').checked;
+      const useStatus = document.getElementById('filterStatus').checked;
+
+      const conversionMin = parseInt(document.getElementById('conversionMin').value) || 0;
+      const openDaysMax = parseInt(document.getElementById('openDaysMax').value) || 999;
+      const accountStatus = document.getElementById('accountStatus').value;
+
+      // 获取所有选中主体的账户
+      let accounts = [];
+      selectedData.subjects.forEach(subject => {
+        accounts.push(...mockData.accounts.filter(a => a.subjectId === subject.id));
+      });
+
+      // 应用筛选
+      if (useConversion) {
+        accounts = accounts.filter(a => a.conversionCount > conversionMin);
+      }
+      if (useOpenDays) {
+        accounts = accounts.filter(a => a.openDays < openDaysMax);
+      }
+      if (useStatus) {
+        accounts = accounts.filter(a => a.status === accountStatus);
+      }
+
+      selectedData.accounts = accounts;
+      updatePreview();
+    }
+
+    // 更新预览
+    function updatePreview() {
+      // 更新计数
+      document.getElementById('subjectCount').textContent = `已选择 ${selectedData.subjects.length} 个主体`;
+      document.getElementById('accountCount').textContent = `符合条件：${selectedData.accounts.length} 个账户`;
+      document.getElementById('projectCount').textContent = `已选择 ${selectedData.projects.length} 个项目`;
+      document.getElementById('bookCount').textContent = `已选择 ${selectedData.books.length} 个小说`;
+      document.getElementById('materialCount').textContent = `已选择 ${selectedData.materials.length} 个素材`;
+
+      // 更新右侧统计
+      document.getElementById('previewSubjects').textContent = selectedData.subjects.length;
+      document.getElementById('previewAccounts').textContent = selectedData.accounts.length;
+      document.getElementById('previewProjects').textContent = selectedData.projects.length;
+      document.getElementById('previewBooks').textContent = selectedData.books.length;
+      document.getElementById('previewMaterials').textContent = selectedData.materials.length;
+
+      // 更新预估（暂时显示0，需要配置规则后才能计算）
+      document.getElementById('estimatedCount').textContent = '?';
+
+      // 验证必填项
+      const valid = selectedData.subjects.length > 0 &&
+                    selectedData.projects.length > 0 &&
+                    selectedData.materials.length > 0;
+      document.getElementById('nextBtn').disabled = !valid;
+    }
+
+    // 搜索
+    document.getElementById('searchSubject').addEventListener('input', debounce(renderSubjects, 300));
+    document.getElementById('searchBook').addEventListener('input', debounce(renderBooks, 300));
+
+    // 下一步
+    function nextStep() {
+      // 保存选择的数据
+      DataStore.save('selectedDimensions', selectedData);
+      Message.success('数据维度已选择');
+      setTimeout(() => {
+        window.location.href = 'rule-config.html';
+      }, 500);
+    }
+
+    // 返回
+    function goBack() {
+      if (confirm('返回将丢失当前选择，是否继续？')) {
+        window.location.href = 'create-new.html';
+      }
+    }
+  </script>
+</body>
+</html>
