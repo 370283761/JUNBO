@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI/UE 设计规范演示 | Design System Documentation</title>
+    <meta name="description" content="UI/UE 设计规范的完整演示和使用说明">
+    <link rel="stylesheet" href="ui-ue-design-system.css">
+    <style>
+        /* 文档页面专用样式 */
+        .doc-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+
+        .doc-hero {
+            text-align: center;
+            padding: var(--spacing-xxl) 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .doc-hero h1 {
+            font-size: 48px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .doc-hero p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .doc-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .doc-nav-card {
+            background: white;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .doc-nav-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .doc-nav-icon {
+            font-size: 48px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .doc-nav-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .doc-nav-desc {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: var(--spacing-xxl);
+            padding: var(--spacing-xl);
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-title {
+            font-size: 28px;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .component-demo {
+            padding: var(--spacing-lg);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .color-swatch {
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            color: white;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .color-label {
+            margin-top: var(--spacing-sm);
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .typography-demo {
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .spacing-demo {
+            display: inline-block;
+            background: var(--color-primary-light);
+            margin: var(--spacing-sm);
+            border: 1px dashed var(--color-primary);
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: var(--spacing-md) 0;
+        }
+
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-md) 0;
+        }
+
+        .spec-table th,
+        .spec-table td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .spec-table th {
+            background: var(--color-bg-secondary);
+            font-weight: 600;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        .tag-primary {
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        .tag-success {
+            background: rgba(52, 168, 83, 0.1);
+            color: var(--color-success);
+        }
+
+        .tag-warning {
+            background: rgba(251, 188, 4, 0.1);
+            color: var(--color-warning);
+        }
+
+        @media (max-width: 767px) {
+            .doc-container {
+                padding: var(--spacing-md);
+            }
+
+            .doc-hero h1 {
+                font-size: 32px;
+            }
+
+            .doc-nav {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">UI/UE Design System</a>
+        <ul class="navbar-nav">
+            <li><a href="#overview" class="navbar-link navbar-link-active">概览</a></li>
+            <li><a href="#components" class="navbar-link">组件</a></li>
+            <li><a href="#examples" class="navbar-link">示例</a></li>
+            <li><a href="https://github.com" class="navbar-link" target="_blank">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <div class="doc-container">
+        <!-- Hero 区域 -->
+        <div class="doc-hero">
+            <h1>UI/UE 设计规范</h1>
+            <p>基于最佳实践的企业级设计系统</p>
+            <div style="margin-top: var(--spacing-xl);">
+                <button class="btn btn-primary" onclick="window.location.href='web-form-example.html'" style="margin: var(--spacing-xs);">
+                    查看 Web 示例
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='mobile-app-example.html'" style="margin: var(--spacing-xs);">
+                    查看移动端示例
+                </button>
+            </div>
+        </div>
+
+        <!-- 快速导航 -->
+        <div class="doc-nav">
+            <a href="web-form-example.html" class="doc-nav-card">
+                <div class="doc-nav-icon">💻</div>
+                <div class="doc-nav-title">Web 表单案例</div>
+                <div class="doc-nav-desc">
+                    完整的 PC 端用户注册表单，包含表单验证、密码强度检测、即时反馈等功能
+                </div>
+            </a>
+
+            <a href="mobile-app-example.html" class="doc-nav-card">
+                <div class="doc-nav-icon">📱</div>
+                <div class="doc-nav-title">移动端应用案例</div>
+                <div class="doc-nav-desc">
+                    任务管理移动应用，展示左滑删除、下拉刷新、底部导航等移动端交互
+                </div>
+            </a>
+
+            <a href="../UX/产品设计SOP指南-用户体验与交互规范.md" class="doc-nav-card">
+                <div class="doc-nav-icon">📖</div>
+                <div class="doc-nav-title">完整设计规范</div>
+                <div class="doc-nav-desc">
+                    查看完整的 UI/UE 设计指南文档，包含所有设计原则和最佳实践
+                </div>
+            </a>
+        </div>
+
+        <!-- 设计令牌 -->
+        <section class="section" id="tokens">
+            <h2 class="section-title">设计令牌 (Design Tokens)</h2>
+
+            <h3>颜色系统</h3>
+            <div class="color-grid">
+                <div class="color-swatch" style="background: var(--color-primary);">
+                    主色
+                    <div class="color-label">#1a73e8</div>
+                </div>
+                <div class="color-swatch" style="background: var(--color-success);">
+                    成功
+                    <div class="color-label">#34a853</div>
+                </div>
+                <div class="color-swatch" style="background: var(--color-warning);">
+                    警告
+                    <div class="color-label">#fbbc04</div>
+                </div>
+                <div class="color-swatch" style="background: var(--color-error);">
+                    错误
+                    <div class="color-label">#ea4335</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: var(--spacing-xl);">间距系统 (8px 基准)</h3>
+            <div class="component-demo">
+                <div class="spacing-demo" style="width: 4px; height: 4px;"></div>
+                <span>4px (xs)</span>
+                <div class="spacing-demo" style="width: 8px; height: 8px;"></div>
+                <span>8px (sm)</span>
+                <div class="spacing-demo" style="width: 16px; height: 16px;"></div>
+                <span>16px (md)</span>
+                <div class="spacing-demo" style="width: 24px; height: 24px;"></div>
+                <span>24px (lg)</span>
+                <div class="spacing-demo" style="width: 32px; height: 32px;"></div>
+                <span>32px (xl)</span>
+            </div>
+        </section>
+
+        <!-- 排版系统 -->
+        <section class="section">
+            <h2 class="section-title">排版系统</h2>
+
+            <div class="typography-demo">
+                <h1>标题 H1 - 32px / 移动端 24px</h1>
+            </div>
+            <div class="typography-demo">
+                <h2>标题 H2 - 24px / 移动端 20px</h2>
+            </div>
+            <div class="typography-demo">
+                <h3>标题 H3 - 20px / 移动端 18px</h3>
+            </div>
+            <div class="typography-demo">
+                <p>正文文本 - 14px (PC) / 16px (移动端)，行高 1.5</p>
+            </div>
+            <div class="typography-demo">
+                <p style="font-size: var(--font-size-caption-desktop);">辅助文本 - 12px (PC) / 14px (移动端)</p>
+            </div>
+
+            <div class="code-block">
+&lt;h1&gt;一级标题&lt;/h1&gt;
+&lt;h2&gt;二级标题&lt;/h2&gt;
+&lt;p&gt;正文段落&lt;/p&gt;</div>
+        </section>
+
+        <!-- 按钮组件 -->
+        <section class="section" id="components">
+            <h2 class="section-title">按钮组件</h2>
+
+            <p>遵循 <span class="tag tag-primary">3.3.3 提交按钮规范</span></p>
+
+            <h3>基础按钮</h3>
+            <div class="component-demo">
+                <button class="btn btn-primary">主要按钮</button>
+                <button class="btn btn-secondary">次要按钮</button>
+                <button class="btn btn-primary" disabled>禁用状态</button>
+                <button class="btn btn-primary btn-loading">加载中</button>
+            </div>
+
+            <div class="code-block">
+&lt;button class="btn btn-primary"&gt;主要按钮&lt;/button&gt;
+&lt;button class="btn btn-secondary"&gt;次要按钮&lt;/button&gt;
+&lt;button class="btn btn-primary" disabled&gt;禁用状态&lt;/button&gt;</div>
+
+            <h3>尺寸规范</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>平台</th>
+                        <th>高度</th>
+                        <th>最小宽度</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>移动端</td>
+                        <td>44px (iOS) / 48px (Android)</td>
+                        <td>100%</td>
+                        <td>符合触控标准</td>
+                    </tr>
+                    <tr>
+                        <td>PC 端</td>
+                        <td>36px</td>
+                        <td>80px</td>
+                        <td>鼠标点击更精准</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 表单组件 -->
+        <section class="section">
+            <h2 class="section-title">表单组件</h2>
+
+            <p>遵循 <span class="tag tag-primary">3.3 表单设计规范</span></p>
+
+            <h3>输入框</h3>
+            <div class="component-demo">
+                <div class="form-group" style="max-width: 400px;">
+                    <label for="demo-input" class="form-label form-label-required">用户名</label>
+                    <input
+                        type="text"
+                        id="demo-input"
+                        class="form-input"
+                        placeholder="请输入用户名"
+                    >
+                    <p class="form-help-text">4-20个字符</p>
+                </div>
+
+                <div class="form-group" style="max-width: 400px;">
+                    <label for="demo-error" class="form-label">错误状态</label>
+                    <input
+                        type="text"
+                        id="demo-error"
+                        class="form-input form-input-error"
+                        value="invalid@"
+                    >
+                    <p class="form-error-message" style="display: flex;">
+                        <span>⚠️</span>
+                        <span>用户名格式不正确</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="code-block">
+&lt;div class="form-group"&gt;
+  &lt;label for="username" class="form-label form-label-required"&gt;用户名&lt;/label&gt;
+  &lt;input type="text" id="username" class="form-input" placeholder="请输入用户名"&gt;
+  &lt;p class="form-help-text"&gt;4-20个字符&lt;/p&gt;
+&lt;/div&gt;</div>
+
+            <h3>表单设计原则</h3>
+            <ul>
+                <li><strong>单列布局</strong>：移动端必须单列，PC 端推荐单列</li>
+                <li><strong>失焦验证</strong>：不在输入时验证，失焦后验证</li>
+                <li><strong>明确错误</strong>：错误信息具体，避免"格式错误"等模糊提示</li>
+                <li><strong>实时字数</strong>：字数限制实时显示 (如：25/100)</li>
+                <li><strong>必填标识</strong>：红色星号 * 或"必填"文字</li>
+            </ul>
+        </section>
+
+        <!-- 反馈组件 -->
+        <section class="section">
+            <h2 class="section-title">反馈组件</h2>
+
+            <p>遵循 <span class="tag tag-primary">3.2.2 反馈规范</span></p>
+
+            <h3>Toast 提示</h3>
+            <div class="component-demo">
+                <button class="btn btn-primary" onclick="showDemoToast('success')">成功提示</button>
+                <button class="btn btn-primary" onclick="showDemoToast('error')">错误提示</button>
+                <button class="btn btn-primary" onclick="showDemoToast('warning')">警告提示</button>
+            </div>
+
+            <h3>反馈时长规范</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>场景</th>
+                        <th>反馈方式</th>
+                        <th>持续时间</th>
+                        <th>位置</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>成功操作</td>
+                        <td>Toast 提示</td>
+                        <td>2-3 秒</td>
+                        <td>顶部居中</td>
+                    </tr>
+                    <tr>
+                        <td>错误提示</td>
+                        <td>错误提示框</td>
+                        <td>用户手动关闭</td>
+                        <td>相关字段下方</td>
+                    </tr>
+                    <tr>
+                        <td>警告信息</td>
+                        <td>警告横幅</td>
+                        <td>5 秒或手动关闭</td>
+                        <td>内容顶部</td>
+                    </tr>
+                    <tr>
+                        <td>确认操作</td>
+                        <td>Modal 弹窗</td>
+                        <td>用户确认</td>
+                        <td>屏幕居中</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 响应式设计 -->
+        <section class="section">
+            <h2 class="section-title">响应式设计</h2>
+
+            <p>遵循 <span class="tag tag-primary">3.6.2 响应式适配</span></p>
+
+            <h3>断点设置</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>设备</th>
+                        <th>断点</th>
+                        <th>布局策略</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>手机</td>
+                        <td>&lt; 768px</td>
+                        <td>单列布局，按钮 44-48px 高</td>
+                    </tr>
+                    <tr>
+                        <td>平板</td>
+                        <td>768px - 1024px</td>
+                        <td>双列或弹性布局</td>
+                    </tr>
+                    <tr>
+                        <td>桌面</td>
+                        <td>&gt; 1024px</td>
+                        <td>多列布局，最大宽度 1200px</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="code-block">
+/* 移动端优先 (Mobile First) */
+.element {
+  width: 100%;
+}
+
+/* 平板 */
+@media (min-width: 768px) {
+  .element {
+    width: 50%;
+  }
+}
+
+/* 桌面 */
+@media (min-width: 1025px) {
+  .element {
+    width: 33.333%;
+  }
+}</div>
+        </section>
+
+        <!-- 移动端 vs PC 端 -->
+        <section class="section">
+            <h2 class="section-title">移动端 vs PC 端设计差异</h2>
+
+            <p>遵循 <span class="tag tag-primary">3.7 移动端与 PC 端设计对比</span></p>
+
+            <h3>核心差异</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>维度</th>
+                        <th>移动端</th>
+                        <th>PC 端</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>交互方式</td>
+                        <td>触控、手势</td>
+                        <td>鼠标、键盘</td>
+                    </tr>
+                    <tr>
+                        <td>布局</td>
+                        <td>单列、垂直滚动</td>
+                        <td>多列、左右分栏</td>
+                    </tr>
+                    <tr>
+                        <td>触控尺寸</td>
+                        <td>最小 44x44px</td>
+                        <td>最小 20x20px</td>
+                    </tr>
+                    <tr>
+                        <td>导航</td>
+                        <td>底部标签栏 (3-5个)</td>
+                        <td>顶部或侧边导航</td>
+                    </tr>
+                    <tr>
+                        <td>删除操作</td>
+                        <td>左滑显示删除按钮</td>
+                        <td>悬停显示或右键菜单</td>
+                    </tr>
+                    <tr>
+                        <td>刷新</td>
+                        <td>下拉刷新</td>
+                        <td>刷新按钮或 F5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 无障碍设计 -->
+        <section class="section">
+            <h2 class="section-title">无障碍设计 (Accessibility)</h2>
+
+            <p>遵循 <span class="tag tag-success">第 4 章 无障碍设计规范</span></p>
+
+            <h3>核心原则</h3>
+            <ul>
+                <li><strong>键盘可访问</strong>：所有交互元素支持 Tab 切换、Enter 确认</li>
+                <li><strong>焦点可见</strong>：焦点状态清晰（2px 蓝色边框）</li>
+                <li><strong>颜色对比</strong>：文字与背景对比度不低于 4.5:1</li>
+                <li><strong>语义化</strong>：使用正确的 HTML 标签和 ARIA 属性</li>
+                <li><strong>屏幕阅读器</strong>：支持 VoiceOver、TalkBack</li>
+                <li><strong>减少动效</strong>：支持 prefers-reduced-motion</li>
+            </ul>
+
+            <div class="component-demo">
+                <button class="btn btn-primary" onclick="alert('焦点状态演示：按 Tab 键查看焦点框')">
+                    尝试按 Tab 键
+                </button>
+                <p style="margin-top: var(--spacing-md);">按 Tab 键在页面元素间切换，观察焦点框效果</p>
+            </div>
+        </section>
+
+        <!-- 使用说明 -->
+        <section class="section">
+            <h2 class="section-title">如何使用这套规范</h2>
+
+            <h3>1. 引入 CSS 文件</h3>
+            <div class="code-block">
+&lt;link rel="stylesheet" href="ui-ue-design-system.css"&gt;</div>
+
+            <h3>2. 使用设计令牌 (CSS 变量)</h3>
+            <div class="code-block">
+.my-component {
+  color: var(--color-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+}</div>
+
+            <h3>3. 使用组件类</h3>
+            <div class="code-block">
+&lt;button class="btn btn-primary"&gt;提交&lt;/button&gt;
+&lt;input type="text" class="form-input" placeholder="请输入"&gt;
+&lt;div class="card"&gt;卡片内容&lt;/div&gt;</div>
+
+            <h3>4. 遵循设计规范</h3>
+            <p>在开发过程中：</p>
+            <ul>
+                <li>✅ 表单使用失焦验证，不在输入时验证</li>
+                <li>✅ 移动端按钮高度 44-48px，PC 端 36px</li>
+                <li>✅ Toast 提示 2-3 秒自动消失</li>
+                <li>✅ 移动端支持左滑删除、下拉刷新</li>
+                <li>✅ 底部导航 3-5 个核心功能</li>
+                <li>✅ 所有交互元素支持键盘操作</li>
+                <li>✅ 提供空状态插画和引导</li>
+            </ul>
+        </section>
+
+        <!-- 相关资源 -->
+        <section class="section">
+            <h2 class="section-title">相关资源</h2>
+
+            <div class="doc-nav">
+                <div class="doc-nav-card">
+                    <div class="doc-nav-icon">📄</div>
+                    <div class="doc-nav-title">CSS 设计系统</div>
+                    <div class="doc-nav-desc">
+                        <code>ui-ue-design-system.css</code> - 完整的 CSS 框架
+                    </div>
+                </div>
+
+                <div class="doc-nav-card">
+                    <div class="doc-nav-icon">📱</div>
+                    <div class="doc-nav-title">移动端案例</div>
+                    <div class="doc-nav-desc">
+                        <code>mobile-app-example.html</code> - 任务管理应用
+                    </div>
+                </div>
+
+                <div class="doc-nav-card">
+                    <div class="doc-nav-icon">💻</div>
+                    <div class="doc-nav-title">Web 表单案例</div>
+                    <div class="doc-nav-desc">
+                        <code>web-form-example.html</code> - 用户注册表单
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast -->
+    <div id="demoToast" style="display: none;"></div>
+
+    <script>
+        function showDemoToast(type) {
+            const messages = {
+                success: '操作成功！',
+                error: '操作失败，请重试',
+                warning: '这是一个警告提示'
+            };
+
+            const toast = document.getElementById('demoToast');
+            toast.textContent = messages[type] || messages.success;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2500);
+        }
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
