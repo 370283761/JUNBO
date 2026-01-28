@@ -1,0 +1,54 @@
+{
+  "colors": {
+    "primary": {
+      "main": "#1890FF",
+      "hover": "#40A9FF",
+      "active": "#096DD9"
+    },
+    "functional": {
+      "success": "#52C41A",
+      "warning": "#FAAD14",
+      "error": "#FF4D4F"
+    },
+    "neutral": {
+      "heading": "#262626",
+      "text": "#595959",
+      "secondary": "#8C8C8C",
+      "disabled": "#BFBFBF",
+      "white": "#FFFFFF",
+      "gray1": "#FAFAFA",
+      "gray2": "#F5F5F5",
+      "gray3": "#E8E8E8",
+      "gray4": "#D9D9D9"
+    }
+  },
+  "typography": {
+    "fontFamily": "-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif",
+    "sizes": {
+      "h1": {"size": 24, "lineHeight": 1.35, "weight": 600},
+      "h2": {"size": 20, "lineHeight": 1.4, "weight": 600},
+      "h3": {"size": 16, "lineHeight": 1.5, "weight": 600},
+      "body": {"size": 14, "lineHeight": 1.5, "weight": 400},
+      "caption": {"size": 12, "lineHeight": 1.5, "weight": 400}
+    }
+  },
+  "spacing": [4, 8, 12, 16, 20, 24, 32, 40],
+  "radius": {"sm": 2, "md": 4, "lg": 8, "xl": 12},
+  "components": {
+    "button": {
+      "height": 32,
+      "padding": "12px 20px",
+      "radius": "md"
+    },
+    "input": {
+      "height": 32,
+      "padding": "4px 11px",
+      "border": "1px solid #D9D9D9"
+    },
+    "card": {
+      "padding": 20,
+      "radius": "lg",
+      "shadow": "0 2px 8px rgba(0,0,0,0.06)"
+    }
+  }
+}

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>移动端案例 - 任务管理应用 | UI/UE 设计规范</title>
+    <meta name="description" content="基于 UI/UE 设计规范的移动端应用示例">
+    <link rel="stylesheet" href="ui-ue-design-system.css">
+    <style>
+        /* ============================================
+           移动端专用样式 (遵循 3.6 移动端特殊规范)
+           ============================================ */
+
+        body {
+            background-color: var(--color-bg-secondary);
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        /* 顶部导航栏 (遵循 3.7.3 导航模式) */
+        .mobile-header {
+            background: white;
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+            box-shadow: var(--shadow-sm);
+            height: 56px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+        }
+
+        .header-icon {
+            width: var(--touch-target-mobile);
+            height: var(--touch-target-mobile);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-fast);
+        }
+
+        .header-icon:active {
+            background: var(--color-bg-secondary);
+        }
+
+        /* 主内容区 */
+        .mobile-content {
+            padding: var(--spacing-md);
+            padding-bottom: 80px; /* 为底部导航留空间 */
+        }
+
+        /* 搜索栏 (移动端优化) */
+        .search-bar {
+            background: white;
+            padding: var(--spacing-md);
+            margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding-left: 40px;
+            background: var(--color-bg-secondary);
+            border: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-secondary);
+        }
+
+        /* 任务卡片 (遵循 3.7.2 移动端布局 - 单列布局) */
+        .task-card {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition-fast);
+            /* 支持左滑删除 (遵循 3.7.4 交互方式对比) */
+            touch-action: pan-y;
+        }
+
+        .task-card:active {
+            transform: scale(0.98);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .task-title {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .task-title-completed {
+            text-decoration: line-through;
+            color: var(--color-text-secondary);
+        }
+
+        .task-priority {
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background: rgba(234, 67, 53, 0.1);
+            color: var(--color-error);
+        }
+
+        .priority-medium {
+            background: rgba(251, 188, 4, 0.1);
+            color: var(--color-warning);
+        }
+
+        .priority-low {
+            background: rgba(52, 168, 83, 0.1);
+            color: var(--color-success);
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            padding-left: 32px;
+        }
+
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 左滑操作按钮 (遵循 3.7.4 移动端交互) */
+        .swipe-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            display: flex;
+            transform: translateX(100%);
+            transition: transform var(--transition-normal);
+        }
+
+        .swipe-action-btn {
+            width: 80px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .swipe-action-archive {
+            background: var(--color-warning);
+        }
+
+        .swipe-action-delete {
+            background: var(--color-error);
+        }
+
+        /* 悬浮添加按钮 (遵循 3.8.6 频繁操作快捷方式) */
+        .fab {
+            position: fixed;
+            bottom: calc(var(--spacing-lg) + 56px + var(--spacing-lg)); /* 底部导航上方 */
+            right: var(--spacing-lg);
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-full);
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-lg);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all var(--transition-fast);
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        /* 底部标签导航 (遵循 3.1.1 导航结构 - 3-5个核心功能) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 768px;
+            margin: 0 auto;
+            background: white;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-around;
+            padding: var(--spacing-xs) 0;
+            z-index: var(--z-sticky);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: var(--spacing-xs);
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+            /* 触控区域 (遵循 3.6.1 触控设计) */
+            min-height: var(--touch-target-mobile);
+            justify-content: center;
+        }
+
+        .nav-item-active {
+            color: var(--color-primary);
+        }
+
+        .nav-item:active {
+            background: var(--color-bg-secondary);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+        }
+
+        /* 空状态 (遵循 3.4.2 空状态必须提供) */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xxl) var(--spacing-lg);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            color: var(--color-text-disabled);
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* 下拉刷新指示器 */
+        .pull-refresh {
+            text-align: center;
+            padding: var(--spacing-sm);
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            display: none;
+        }
+
+        /* 长按选择模式 (遵循 3.7.4 批量操作) */
+        .selection-mode .task-card {
+            padding-right: 48px;
+        }
+
+        .selection-mode .task-checkbox {
+            display: block;
+        }
+
+        .selection-toolbar {
+            position: fixed;
+            bottom: 56px; /* 底部导航高度 */
+            left: 0;
+            right: 0;
+            max-width: 768px;
+            margin: 0 auto;
+            background: white;
+            border-top: 1px solid var(--color-border);
+            padding: var(--spacing-md);
+            display: none;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .selection-mode .selection-toolbar {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .selection-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--color-text-primary);
+        }
+
+        /* 分类标签 */
+        .category-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            overflow-x: auto;
+            padding: var(--spacing-md) 0;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            background: white;
+            border: 1px solid var(--color-border);
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .category-tab-active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .category-tab:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="mobile-header">
+        <div class="header-icon" onclick="toggleMenu()" aria-label="菜单">
+            <span style="font-size: 24px;">☰</span>
+        </div>
+        <h1 class="header-title">我的任务</h1>
+        <div class="header-icon" onclick="showSearch()" aria-label="搜索">
+            <span style="font-size: 24px;">🔍</span>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="mobile-content" id="mainContent">
+
+        <!-- 下拉刷新提示 -->
+        <div class="pull-refresh" id="pullRefresh">下拉刷新...</div>
+
+        <!-- 分类标签 (遵循 3.1.1 标签导航 - 不超过7个) -->
+        <div class="category-tabs">
+            <button class="category-tab category-tab-active" onclick="filterCategory('all')">
+                全部 (5)
+            </button>
+            <button class="category-tab" onclick="filterCategory('work')">
+                工作 (3)
+            </button>
+            <button class="category-tab" onclick="filterCategory('personal')">
+                个人 (2)
+            </button>
+            <button class="category-tab" onclick="filterCategory('urgent')">
+                紧急 (1)
+            </button>
+            <button class="category-tab" onclick="filterCategory('today')">
+                今日 (4)
+            </button>
+        </div>
+
+        <!-- 任务列表 (单列布局) -->
+        <div id="taskList">
+            <!-- 任务1 -->
+            <div class="task-card" data-id="1" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
+                <div class="task-header">
+                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(1)">
+                    <div class="task-title">完成项目原型设计评审</div>
+                    <span class="task-priority priority-high">高</span>
+                </div>
+                <div class="task-meta">
+                    <span class="task-meta-item">📅 今天 14:00</span>
+                    <span class="task-meta-item">🏷️ 工作</span>
+                </div>
+                <div class="swipe-actions">
+                    <button class="swipe-action-btn swipe-action-archive" onclick="archiveTask(1)">
+                        归档
+                    </button>
+                    <button class="swipe-action-btn swipe-action-delete" onclick="deleteTask(1)">
+                        删除
+                    </button>
+                </div>
+            </div>
+
+            <!-- 任务2 -->
+            <div class="task-card" data-id="2">
+                <div class="task-header">
+                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(2)">
+                    <div class="task-title">更新 UI 设计规范文档</div>
+                    <span class="task-priority priority-medium">中</span>
+                </div>
+                <div class="task-meta">
+                    <span class="task-meta-item">📅 明天</span>
+                    <span class="task-meta-item">🏷️ 工作</span>
+                </div>
+                <div class="swipe-actions">
+                    <button class="swipe-action-btn swipe-action-archive" onclick="archiveTask(2)">
+                        归档
+                    </button>
+                    <button class="swipe-action-btn swipe-action-delete" onclick="deleteTask(2)">
+                        删除
+                    </button>
+                </div>
+            </div>
+
+            <!-- 任务3 (已完成) -->
+            <div class="task-card" data-id="3">
+                <div class="task-header">
+                    <input type="checkbox" class="task-checkbox" checked onchange="toggleTask(3)">
+                    <div class="task-title task-title-completed">团队周会总结</div>
+                    <span class="task-priority priority-low">低</span>
+                </div>
+                <div class="task-meta">
+                    <span class="task-meta-item">✅ 已完成</span>
+                    <span class="task-meta-item">🏷️ 工作</span>
+                </div>
+                <div class="swipe-actions">
+                    <button class="swipe-action-btn swipe-action-archive" onclick="archiveTask(3)">
+                        归档
+                    </button>
+                    <button class="swipe-action-btn swipe-action-delete" onclick="deleteTask(3)">
+                        删除
+                    </button>
+                </div>
+            </div>
+
+            <!-- 任务4 -->
+            <div class="task-card" data-id="4">
+                <div class="task-header">
+                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(4)">
+                    <div class="task-title">健身房锻炼</div>
+                    <span class="task-priority priority-medium">中</span>
+                </div>
+                <div class="task-meta">
+                    <span class="task-meta-item">📅 今天 19:00</span>
+                    <span class="task-meta-item">🏷️ 个人</span>
+                </div>
+                <div class="swipe-actions">
+                    <button class="swipe-action-btn swipe-action-archive" onclick="archiveTask(4)">
+                        归档
+                    </button>
+                    <button class="swipe-action-btn swipe-action-delete" onclick="deleteTask(4)">
+                        删除
+                    </button>
+                </div>
+            </div>
+
+            <!-- 任务5 -->
+            <div class="task-card" data-id="5">
+                <div class="task-header">
+                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(5)">
+                    <div class="task-title">准备明天的演讲材料</div>
+                    <span class="task-priority priority-high">高</span>
+                </div>
+                <div class="task-meta">
+                    <span class="task-meta-item">📅 今天</span>
+                    <span class="task-meta-item">🏷️ 工作</span>
+                </div>
+                <div class="swipe-actions">
+                    <button class="swipe-action-btn swipe-action-archive" onclick="archiveTask(5)">
+                        归档
+                    </button>
+                    <button class="swipe-action-btn swipe-action-delete" onclick="deleteTask(5)">
+                        删除
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 悬浮添加按钮 (遵循 3.8.6 频繁操作快捷方式) -->
+    <button class="fab" onclick="addTask()" aria-label="添加任务">
+        +
+    </button>
+
+    <!-- 批量操作工具栏 -->
+    <div class="selection-toolbar">
+        <div class="selection-info">
+            已选择 <strong id="selectedCount">0</strong> 项
+        </div>
+        <button class="btn btn-secondary" onclick="exitSelectionMode()" style="width: auto;">
+            取消
+        </button>
+        <button class="btn btn-primary" onclick="batchDelete()" style="width: auto;">
+            删除
+        </button>
+    </div>
+
+    <!-- 底部导航栏 (遵循 3-5个核心功能) -->
+    <nav class="bottom-nav" role="navigation">
+        <a href="#" class="nav-item nav-item-active" aria-label="首页" aria-current="page">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">首页</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="任务" onclick="showToast('切换到任务')">
+            <span class="nav-icon">✓</span>
+            <span class="nav-label">任务</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="日历" onclick="showToast('切换到日历')">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">日历</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="通知" onclick="showToast('切换到通知')">
+            <span class="nav-icon">🔔</span>
+            <span class="nav-label">通知</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="我的" onclick="showToast('切换到我的')">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">我的</span>
+        </a>
+    </nav>
+
+    <!-- Toast 提示 -->
+    <div id="toast" style="display: none;"></div>
+
+    <script>
+        // ============================================
+        // 左滑删除功能 (遵循 3.7.4 移动端交互)
+        // ============================================
+
+        let touchStartX = 0;
+        let touchCurrentX = 0;
+        let currentCard = null;
+
+        function handleTouchStart(e) {
+            touchStartX = e.touches[0].clientX;
+            currentCard = e.currentTarget;
+        }
+
+        function handleTouchMove(e) {
+            if (!currentCard) return;
+
+            touchCurrentX = e.touches[0].clientX;
+            const diff = touchStartX - touchCurrentX;
+
+            // 只允许左滑
+            if (diff > 0 && diff < 160) {
+                const actions = currentCard.querySelector('.swipe-actions');
+                actions.style.transform = `translateX(calc(100% - ${diff}px))`;
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!currentCard) return;
+
+            const diff = touchStartX - touchCurrentX;
+            const actions = currentCard.querySelector('.swipe-actions');
+
+            // 滑动超过80px则显示操作按钮
+            if (diff > 80) {
+                actions.style.transform = 'translateX(0)';
+            } else {
+                actions.style.transform = 'translateX(100%)';
+            }
+
+            currentCard = null;
+        }
+
+        // 关闭所有打开的滑动操作
+        function closeAllSwipes() {
+            document.querySelectorAll('.swipe-actions').forEach(action => {
+                action.style.transform = 'translateX(100%)';
+            });
+        }
+
+        // ============================================
+        // 任务操作
+        // ============================================
+
+        function toggleTask(id) {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            const title = card.querySelector('.task-title');
+            const checkbox = card.querySelector('.task-checkbox');
+
+            if (checkbox.checked) {
+                title.classList.add('task-title-completed');
+                showToast('任务已完成 ✓', 'success');
+            } else {
+                title.classList.remove('task-title-completed');
+                showToast('任务已恢复', 'info');
+            }
+        }
+
+        function archiveTask(id) {
+            closeAllSwipes();
+            showToast('任务已归档', 'success');
+            // 添加撤销选项
+            setTimeout(() => {
+                const card = document.querySelector(`[data-id="${id}"]`);
+                card.style.transition = 'all 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(-100%)';
+                setTimeout(() => card.remove(), 300);
+            }, 500);
+        }
+
+        function deleteTask(id) {
+            closeAllSwipes();
+
+            // 显示确认 Toast (3秒内可撤销)
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `
+                <span>任务已删除</span>
+                <button onclick="undoDelete(${id})" style="margin-left: 16px; background: transparent; border: 1px solid white; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer;">
+                    撤销
+                </button>
+            `;
+            toast.className = 'toast';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '8px';
+
+            setTimeout(() => {
+                const card = document.querySelector(`[data-id="${id}"]`);
+                if (card) {
+                    card.style.transition = 'all 0.3s';
+                    card.style.opacity = '0';
+                    card.style.height = '0';
+                    card.style.padding = '0';
+                    card.style.margin = '0';
+                    setTimeout(() => card.remove(), 300);
+                }
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function undoDelete(id) {
+            document.getElementById('toast').style.display = 'none';
+            showToast('已撤销删除', 'success');
+        }
+
+        function addTask() {
+            showToast('打开添加任务页面', 'info');
+            // 实际应该打开全屏的添加任务表单
+        }
+
+        // ============================================
+        // 长按进入批量选择模式 (遵循 3.7.4 批量操作)
+        // ============================================
+
+        let longPressTimer = null;
+        let isSelectionMode = false;
+
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('touchstart', (e) => {
+                if (!isSelectionMode && !e.target.classList.contains('task-checkbox')) {
+                    longPressTimer = setTimeout(() => {
+                        enterSelectionMode();
+                        // 触觉反馈 (如果支持)
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50);
+                        }
+                    }, 500);
+                }
+            });
+
+            card.addEventListener('touchend', () => {
+                clearTimeout(longPressTimer);
+            });
+
+            card.addEventListener('touchmove', () => {
+                clearTimeout(longPressTimer);
+            });
+        });
+
+        function enterSelectionMode() {
+            isSelectionMode = true;
+            document.body.classList.add('selection-mode');
+            showToast('长按选择模式', 'info');
+            updateSelectionCount();
+        }
+
+        function exitSelectionMode() {
+            isSelectionMode = false;
+            document.body.classList.remove('selection-mode');
+            // 取消所有选择
+            document.querySelectorAll('.task-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+        }
+
+        function updateSelectionCount() {
+            const count = document.querySelectorAll('.task-checkbox:checked').length;
+            document.getElementById('selectedCount').textContent = count;
+        }
+
+        // 监听复选框变化
+        document.querySelectorAll('.task-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (isSelectionMode) {
+                    updateSelectionCount();
+                }
+            });
+        });
+
+        function batchDelete() {
+            const selected = document.querySelectorAll('.task-checkbox:checked');
+            const count = selected.length;
+
+            if (count === 0) {
+                showToast('请先选择任务', 'warning');
+                return;
+            }
+
+            showToast(`已删除 ${count} 个任务`, 'success');
+
+            selected.forEach(cb => {
+                const card = cb.closest('.task-card');
+                card.style.transition = 'all 0.3s';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            });
+
+            exitSelectionMode();
+        }
+
+        // ============================================
+        // 下拉刷新 (遵循 3.6.1 手势操作)
+        // ============================================
+
+        let pullStartY = 0;
+        let isPulling = false;
+
+        window.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                pullStartY = e.touches[0].clientY;
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (window.scrollY === 0) {
+                const pullDistance = e.touches[0].clientY - pullStartY;
+                const pullRefresh = document.getElementById('pullRefresh');
+
+                if (pullDistance > 0 && pullDistance < 100) {
+                    pullRefresh.style.display = 'block';
+                    pullRefresh.textContent = '下拉刷新...';
+                    isPulling = true;
+                } else if (pullDistance >= 100) {
+                    pullRefresh.textContent = '释放刷新';
+                }
+            }
+        });
+
+        window.addEventListener('touchend', (e) => {
+            const pullRefresh = document.getElementById('pullRefresh');
+
+            if (isPulling && pullRefresh.textContent === '释放刷新') {
+                pullRefresh.textContent = '正在刷新...';
+
+                // 模拟刷新
+                setTimeout(() => {
+                    pullRefresh.style.display = 'none';
+                    showToast('刷新成功', 'success');
+                    isPulling = false;
+                }, 1000);
+            } else {
+                pullRefresh.style.display = 'none';
+                isPulling = false;
+            }
+        });
+
+        // ============================================
+        // 其他功能
+        // ============================================
+
+        function filterCategory(category) {
+            // 更新标签状态
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('category-tab-active');
+            });
+            event.target.classList.add('category-tab-active');
+
+            showToast(`筛选: ${category}`, 'info');
+            // 实际应该过滤任务列表
+        }
+
+        function toggleMenu() {
+            showToast('打开侧边菜单', 'info');
+        }
+
+        function showSearch() {
+            showToast('打开搜索', 'info');
+        }
+
+        // Toast 提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        // 点击空白区域关闭所有滑动操作
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.task-card')) {
+                closeAllSwipes();
+            }
+        });
+    </script>
+</body>
+</html>

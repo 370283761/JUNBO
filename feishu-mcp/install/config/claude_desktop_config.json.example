@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "feishu": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "feishu-mcp@latest",
+        "--feishu-app-id=cli_xxxxxxxxxx",
+        "--feishu-app-secret=xxxxxxxxxxxxxxxx",
+        "--feishu-auth-type=tenant"
+      ]
+    }
+  }
+}

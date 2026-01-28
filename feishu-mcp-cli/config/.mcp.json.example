@@ -1,0 +1,12 @@
+{
+  "feishu": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "feishu-mcp@latest",
+      "--feishu-app-id=YOUR_APP_ID_HERE",
+      "--feishu-app-secret=YOUR_APP_SECRET_HERE",
+      "--feishu-auth-type=tenant"
+    ]
+  }
+}

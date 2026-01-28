@@ -1,0 +1,47 @@
+# 忽略包含真实凭证的配置文件
+config.json
+*.secret.json
+*.private.json
+
+# macOS 系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 编辑器和 IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 备份文件
+*.backup
+*.bak
+
+# Node.js 相关（如果将来需要）
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python 相关（与现有 quanyi 工具保持一致）
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# 用户特定配置
+.env
+.env.local

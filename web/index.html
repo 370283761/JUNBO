@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量计划创编部署 - AIDesigner.ai</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0ea5e9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logo::before {
+            content: '🤖';
+            font-size: 20px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #6b7280;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            color: #0ea5e9;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 8px 12px 8px 36px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            width: 220px;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #0284c7;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .step {
+            margin-bottom: 36px;
+            padding-bottom: 36px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .step-number {
+            background: #0ea5e9;
+            color: white;
+            min-width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .step-action {
+            color: #0ea5e9;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .step-action:hover {
+            color: #0284c7;
+        }
+
+        .tag-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .tag {
+            padding: 8px 18px;
+            border: 1.5px solid #0ea5e9;
+            border-radius: 24px;
+            font-size: 13px;
+            cursor: pointer;
+            background: white;
+            color: #0ea5e9;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .tag.selected {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        .tag:hover {
+            background: #e0f2fe;
+        }
+
+        .tag.add-tag {
+            border: 1.5px dashed #cbd5e1;
+            color: #64748b;
+        }
+
+        .tag.add-tag:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+            background: white;
+        }
+
+        .image-upload-area {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .upload-box {
+            aspect-ratio: 0.95;
+            border: 2px dashed #bae6fd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #e0f2fe;
+        }
+
+        .upload-box:hover {
+            border-color: #0ea5e9;
+            background: #f0f9ff;
+        }
+
+        .upload-box.has-image {
+            border-style: solid;
+            border-color: #e5e7eb;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .upload-text {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .upload-button {
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .upload-button:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .model-card {
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .model-card:hover {
+            border-color: #0ea5e9;
+            background: #f0f9ff;
+        }
+
+        .model-card.selected {
+            border-color: #0ea5e9;
+            background: #e0f2fe;
+        }
+
+        .model-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .model-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #111827;
+        }
+
+        .model-desc {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: sticky;
+            top: 32px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .info-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .info-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-badge {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0ea5e9;
+        }
+
+        .info-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            border-radius: 12px;
+            padding: 24px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .stats-header {
+            font-size: 13px;
+            opacity: 0.95;
+            margin-bottom: 16px;
+        }
+
+        .stats-number {
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .stats-unit {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .stats-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .stats-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-item {
+            padding: 12px 0;
+            font-size: 13px;
+            color: #4b5563;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-item:not(:last-child) {
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .link-text {
+            color: #0ea5e9;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .link-text:hover {
+            text-decoration: underline;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background: #14b8a6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-button:hover {
+            background: #0d9488;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #14b8a6;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .time-badge {
+            background: #f3f4f6;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">AIDesigner.ai</div>
+        <nav class="nav">
+            <a href="#" class="active">AI助手</a>
+            <a href="#">知识管理</a>
+            <a href="#">我的项目</a>
+            <a href="#">费用明细</a>
+        </nav>
+        <div class="header-right">
+            <div class="search-box">
+                <input type="text" placeholder="请搜索文档">
+            </div>
+            <button class="btn-primary">新增项目</button>
+            <div class="user-avatar"></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">批量计划创编部署</h1>
+            <p class="page-subtitle">已启用的任务，将定期发布文档和任务计划</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <!-- 步骤1: 文档任务 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">1</span>
+                            文档任务
+                        </div>
+                        <a href="#" class="step-action">✏️ 文档编辑</a>
+                    </div>
+                    <div class="tag-group">
+                        <span class="tag">文档 - KnoBed</span>
+                        <span class="tag add-tag">+ 其他文档</span>
+                    </div>
+                </div>
+
+                <!-- 步骤2: 媒体组 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">2</span>
+                            媒体组
+                        </div>
+                        <a href="#" class="step-action">✏️ 文章编辑</a>
+                    </div>
+                    <div class="tag-group">
+                        <span class="tag selected">中兴通信</span>
+                        <span class="tag">UFI标签</span>
+                        <span class="tag">流程组</span>
+                    </div>
+                    <div class="image-upload-area">
+                        <div class="upload-box">
+                            <div class="upload-icon">📄</div>
+                        </div>
+                        <div class="upload-box">
+                            <div class="upload-icon">📄</div>
+                        </div>
+                    </div>
+                    <button class="upload-button">📎 图</button>
+                </div>
+
+                <!-- 步骤3: 产品配置 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">3</span>
+                            产品配置
+                        </div>
+                        <a href="#" class="step-action">✏️ 编辑</a>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">推品编ID</label>
+                        <input type="text" class="form-control" placeholder="市场预测">
+                    </div>
+                    <div class="model-grid">
+                        <div class="model-card selected">
+                            <div class="model-icon">🤖</div>
+                            <div class="model-name">JX_Products_00_24</div>
+                            <div class="model-desc">FL 1204</div>
+                        </div>
+                        <div class="model-card">
+                            <div class="model-icon">🤖</div>
+                            <div class="model-name">JX_Products_01_01</div>
+                            <div class="model-desc">FL 1204</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤4: 媒体 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">4</span>
+                            媒体
+                        </div>
+                        <a href="#" class="step-action">✏️ 编辑</a>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control">
+                            <option>可见性排序</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 步骤5: 产品 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">5</span>
+                            产品
+                        </div>
+                        <a href="#" class="step-action">✏️ 编辑</a>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control">
+                            <option>选择产品类型</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <!-- 项目进度卡片 -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <div class="info-title">📊 要求于 - 发布项目</div>
+                        <div class="info-badge">98%</div>
+                    </div>
+                    <div class="info-subtitle">
+                        <span>查看</span>
+                        <span>查看所有历史</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 98%"></div>
+                    </div>
+                </div>
+
+                <!-- 素材资源统计卡片 -->
+                <div class="stats-card">
+                    <div class="stats-header">标题区域文字</div>
+                    <div class="stats-number">
+                        100
+                        <span class="stats-unit">素材资源</span>
+                    </div>
+                    <div class="stats-details">
+                        <div style="flex: 1;">
+                            <div class="stats-row">
+                                <span>文本</span>
+                                <strong>5.7M</strong>
+                            </div>
+                            <div class="stats-row">
+                                <span>多媒体</span>
+                                <strong>5.9M</strong>
+                            </div>
+                            <div class="stats-row">
+                                <span>任务</span>
+                                <strong>5.2K</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 计划模板状态 -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <div class="info-title">📝 计划模板状态</div>
+                        <div class="info-badge">99.86%</div>
+                    </div>
+                    <ul class="info-list">
+                        <li class="info-item">已发布</li>
+                        <li class="info-item">创建中</li>
+                        <li class="info-item">
+                            <a href="#" class="link-text">更多信息 + 查看所有</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 内容发布日历 -->
+                <div class="info-card">
+                    <div class="info-title">📅 内容发布日历（模块）</div>
+                    <div class="info-subtitle" style="display: block; margin-top: 8px;">
+                        <span>进度：</span>
+                    </div>
+                    <ul class="info-list">
+                        <li class="info-item">
+                            <span>Monday_PM_Reminder(Dec_14_V20)</span>
+                            <span class="time-badge">2h</span>
+                        </li>
+                        <li class="info-item">
+                            <span>Monday_AM_Reminder(Dec_14_V29)</span>
+                            <span class="time-badge">3h</span>
+                        </li>
+                        <li class="info-item">
+                            <span>Monday_AM_Reminder(Dec_14_V20)</span>
+                        </li>
+                        <li class="info-item">
+                            <span>Monday_AM_Reminder(Dec_14_V20)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <button class="submit-button">
+                    开始批量创编部署开发流程 ✓
+                </button>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        // 标签选择交互
+        document.querySelectorAll('.tag:not(.add-tag)').forEach(tag => {
+            tag.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // 模型卡片选择
+        document.querySelectorAll('.model-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 图片上传
+        document.querySelectorAll('.upload-box').forEach(box => {
+            if (!box.querySelector('span')) {
+                box.addEventListener('click', function() {
+                    if (!this.classList.contains('has-image')) {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                    this.style.backgroundImage = `url(${event.target.result})`;
+                                    this.style.backgroundSize = 'cover';
+                                    this.style.backgroundPosition = 'center';
+                                    this.innerHTML = '';
+                                    this.classList.add('has-image');
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        };
+                        input.click();
+                    }
+                });
+            }
+        });
+
+        // 提交按钮
+        document.querySelector('.submit-button').addEventListener('click', function() {
+            alert('开始批量创编部署开发流程！');
+        });
+
+        // 添加文档标签
+        document.querySelector('.add-tag').addEventListener('click', function() {
+            const newTag = prompt('请输入新文档标签名称：');
+            if (newTag) {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = newTag;
+                tagElement.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+                this.parentElement.insertBefore(tagElement, this);
+            }
+        });
+    </script>
+</body>
+</html>
