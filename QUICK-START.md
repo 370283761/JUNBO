@@ -13,7 +13,7 @@
 
 ```bash
 cd /Users/depp/projects/Prd_PO
-./deploy-to-github.sh YOUR_GITHUB_USERNAME
+./deploy-to-github.sh 370283761
 ```
 
 **替换 `YOUR_GITHUB_USERNAME` 为您的 GitHub ���户名！**

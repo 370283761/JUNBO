@@ -56,3 +56,4 @@ ENV/
 # Node
 node_modules/
 dist/
+QUICK-START.md
